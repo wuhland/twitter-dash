@@ -17,14 +17,13 @@ import logging
 import datetime
 import pytz
 import json
+import private_keys
 
 #auth twitter
-auth = tweepy.OAuthHandler(settings.CONSUMER_KEY, settings.CONSUMER_SECRET)
-auth.set_access_token(settings.ACCESS_TOKEN, settings.ACCESS_TOKEN_SECRET)
-api = tweepy.API(auth)
+api = tweepy.API(private_keys.auth)
 
 #set up boto connection access
-conn = S3Connection(settings.AWS_ACCESS_KEY_ID, settings.AWS_SECRET_ACCESS_KEY)
+conn = private_keys.conn
 bucket = conn.get_bucket('wh-twitter')
 
 #setting up logging

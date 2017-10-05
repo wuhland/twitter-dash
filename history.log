@@ -10,3 +10,38 @@ DEBUG:requests_oauthlib.oauth1_auth:Updated headers: {'Content-Type': 'applicati
 DEBUG:requests_oauthlib.oauth1_auth:Updated body: 'track=%23whitehelmets'
 DEBUG:requests.packages.urllib3.connectionpool:Starting new HTTPS connection (1): stream.twitter.com
 DEBUG:requests.packages.urllib3.connectionpool:https://stream.twitter.com:443 "POST /1.1/statuses/filter.json?delimited=length HTTP/1.1" 200 None
+DEBUG:boto:Using access key provided by client.
+DEBUG:boto:Using secret key provided by client.
+DEBUG:boto:path=/
+DEBUG:boto:auth_path=/wh-twitter/
+DEBUG:boto:Method: HEAD
+DEBUG:boto:Path: /
+DEBUG:boto:Data: 
+DEBUG:boto:Headers: {}
+DEBUG:boto:Host: wh-twitter.s3.amazonaws.com:443
+DEBUG:boto:Port: 443
+DEBUG:boto:Params: {}
+DEBUG:boto:establishing HTTPS connection: host=wh-twitter.s3.amazonaws.com, kwargs={'timeout': 70, 'port': 443}
+DEBUG:boto:Token: None
+DEBUG:boto:StringToSign:
+HEAD
+
+
+Thu, 05 Oct 2017 23:31:03 GMT
+/wh-twitter/
+DEBUG:boto:Signature:
+AWS AKIAJT4LO3PGSBFXOHNA:tJlwSRJYO74KKpRVx/mlwZczafw=
+DEBUG:boto:Final headers: {'User-Agent': 'Boto/2.48.0 Python/3.6.2 Linux/4.4.0-77-generic', 'Date': 'Thu, 05 Oct 2017 23:31:03 GMT', 'Authorization': 'AWS AKIAJT4LO3PGSBFXOHNA:tJlwSRJYO74KKpRVx/mlwZczafw=', 'Content-Length': '0'}
+DEBUG:boto:Response headers: [('x-amz-id-2', 'pk4LlGWLR5XGCzmIA7Y6K8WypSCHBliV4XX47I2CVWfHZNZpRTpMdnXywwo9PoxCcTpA3YXBF7o='), ('x-amz-request-id', '705D7C2F6C98F1F6'), ('Date', 'Thu, 05 Oct 2017 23:31:04 GMT'), ('x-amz-bucket-region', 'us-east-1'), ('Content-Type', 'application/xml'), ('Transfer-Encoding', 'chunked'), ('Server', 'AmazonS3')]
+DEBUG:requests_oauthlib.oauth1_auth:Signing request <PreparedRequest [POST]> using client <Client client_key=bN7VSMVUwMhImQ8kzLie1It4J, client_secret=****, resource_owner_key=28627512-soEZFN7GHU5liLyC8RqL7CipuiEBb0gBZxUpwbcyk, resource_owner_secret=****, signature_method=HMAC-SHA1, signature_type=AUTH_HEADER, callback_uri=None, rsa_key=None, verifier=None, realm=None, encoding=utf-8, decoding=None, nonce=None, timestamp=None>
+DEBUG:requests_oauthlib.oauth1_auth:Including body in call to sign: True
+DEBUG:oauthlib.oauth1.rfc5849:Collected params: [('delimited', 'length'), ('oauth_nonce', '54593720255592694761507246263'), ('oauth_timestamp', '1507246263'), ('oauth_version', '1.0'), ('oauth_signature_method', 'HMAC-SHA1'), ('oauth_consumer_key', 'bN7VSMVUwMhImQ8kzLie1It4J'), ('oauth_token', '28627512-soEZFN7GHU5liLyC8RqL7CipuiEBb0gBZxUpwbcyk'), ('track', '#whitehelmets')]
+DEBUG:oauthlib.oauth1.rfc5849:Normalized params: delimited=length&oauth_consumer_key=bN7VSMVUwMhImQ8kzLie1It4J&oauth_nonce=54593720255592694761507246263&oauth_signature_method=HMAC-SHA1&oauth_timestamp=1507246263&oauth_token=28627512-soEZFN7GHU5liLyC8RqL7CipuiEBb0gBZxUpwbcyk&oauth_version=1.0&track=%23whitehelmets
+DEBUG:oauthlib.oauth1.rfc5849:Normalized URI: https://stream.twitter.com/1.1/statuses/filter.json
+DEBUG:oauthlib.oauth1.rfc5849:Signing: signature base string: POST&https%3A%2F%2Fstream.twitter.com%2F1.1%2Fstatuses%2Ffilter.json&delimited%3Dlength%26oauth_consumer_key%3DbN7VSMVUwMhImQ8kzLie1It4J%26oauth_nonce%3D54593720255592694761507246263%26oauth_signature_method%3DHMAC-SHA1%26oauth_timestamp%3D1507246263%26oauth_token%3D28627512-soEZFN7GHU5liLyC8RqL7CipuiEBb0gBZxUpwbcyk%26oauth_version%3D1.0%26track%3D%2523whitehelmets
+DEBUG:oauthlib.oauth1.rfc5849:Signature: p3OmOWpEW/HoB0KPHwczGz22FTA=
+DEBUG:requests_oauthlib.oauth1_auth:Updated url: https://stream.twitter.com/1.1/statuses/filter.json?delimited=length
+DEBUG:requests_oauthlib.oauth1_auth:Updated headers: {'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': '21', 'Authorization': 'OAuth oauth_nonce="54593720255592694761507246263", oauth_timestamp="1507246263", oauth_version="1.0", oauth_signature_method="HMAC-SHA1", oauth_consumer_key="bN7VSMVUwMhImQ8kzLie1It4J", oauth_token="28627512-soEZFN7GHU5liLyC8RqL7CipuiEBb0gBZxUpwbcyk", oauth_signature="p3OmOWpEW%2FHoB0KPHwczGz22FTA%3D"'}
+DEBUG:requests_oauthlib.oauth1_auth:Updated body: 'track=%23whitehelmets'
+DEBUG:requests.packages.urllib3.connectionpool:Starting new HTTPS connection (1): stream.twitter.com
+DEBUG:requests.packages.urllib3.connectionpool:https://stream.twitter.com:443 "POST /1.1/statuses/filter.json?delimited=length HTTP/1.1" 200 None
