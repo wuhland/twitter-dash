@@ -20,4 +20,7 @@ try:
     from twitter_private import *
 except Exception:
     pass
-
+try:
+    from aws_private import *
+except Exception:
+    pass
