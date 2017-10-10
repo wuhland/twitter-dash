@@ -23,7 +23,7 @@ import igraph as ig
 import itertools
 
 #auth twitter
-api = tweepy.API(private_keys.auth)
+api = tweepy.API(auth_handler=private_keys.auth, wait_on_rate_limit=True,wait_on_rate_limit_notify=True)
 
 #set up boto connection access
 conn = private_keys.conn
@@ -138,14 +138,14 @@ def trending(df1, df2, merge_on):
     concat = pd.merge(df1,df2,on=merge_on,how='outer')
     concat.fillna(0)
     concat.columns = ['labels','last_week','this_week']
-    concat['this_week'] = np.random.randn(11,1) + 3
+  #  concat['this_week'] = np.random.randn(11,1) + 3
     concat['pct_change'] = (concat['this_week'] - concat['last_week'])/concat['last_week'] 
     return(concat.sort_values(by=['pct_change'],ascending=False))
     
 #create media list: gets a list of lists of media sources found in twitter
 #outputs an igraph network dataset    
-def create_media_graph(media_list):
-    g = ig.Graph()
+def make_media_graph(media_list):
+    g = ig.Graph(directed=False)
     for lst in media_list:
         if lst and len(lst) >= 2:
             combos = itertools.combinations(lst)
@@ -216,8 +216,13 @@ def weekly_mung():
         return url_list
             
      #grouped dataframe with list of urls shared by each tweeter   
+     
     
-    df['entities'].apply(list).apply(user_urls)        
+    media_df = df.groupby(by=['user_name'])['entities'].apply(list).apply(user_urls)
+    graph = make_media_graph(list(media_df))
+    layout = graph
+
+    
     
     
     
