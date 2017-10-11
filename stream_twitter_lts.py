@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Created on Tue Oct  3 17:45:05 2017
@@ -59,7 +58,7 @@ class StreamListener(tweepy.StreamListener):
     def on_status(self, status):
         if status.retweeted:
             return
-        store_tweet(status,db_lts)
+        store_tweet(status,lts)
 
     def on_error(self, status_code):
         if status_code == 420:
