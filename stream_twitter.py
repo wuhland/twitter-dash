@@ -16,11 +16,10 @@ import pandas as pd
 import logging
 import json
 import private_keys
-import numpy as np
 from pandas.tseries.offsets import DateOffset
-import plotly
 import igraph as ig
 import itertools
+
 
 #auth twitter
 api = tweepy.API(auth_handler=private_keys.auth, wait_on_rate_limit=True,wait_on_rate_limit_notify=True)
@@ -32,12 +31,11 @@ bucket = conn.get_bucket('wh-twitter')
 #setting up logging
 logging.basicConfig(filename='history.log', filemode='w',level=logging.DEBUG)
 
-db_mem = dataset.connect(settings.CONNECTION_STRING)
 db_lts = dataset.connect(settings.CONNECTION_STRING_LTS)
+db_mem = dataset.connect(settings.CONNECTION_STRING)
 
 def store_tweet(tweet,database):
         text = tweet.text
-        print(text)
         name = tweet.user.screen_name
         user_created = tweet.user.created_at
         followers = tweet.user.followers_count
@@ -72,13 +70,16 @@ class StreamListener(tweepy.StreamListener):
     def on_status(self, status):
         if status.retweeted:
             return
-        store_tweet(status,db_mem)
-        store_tweet(status,db_lts)
+        store_tweet(status,memory)
+        store_tweet(status,lts)
 
     def on_error(self, status_code):
         if status_code == 420:
+            
             #returning False in on_data disconnects the stream
             return False
+    def on_disconnect(self, notice):
+        return
     
 
 
@@ -99,20 +100,21 @@ def extract_entities(entities):
     if entities['urls']:
         for url in entities['urls']:
             if 'display_url' in url.keys():
-                urls.append(url['display_url'])
+                display_url = url['display_url']
+                #do not include if it is a twitter share
+                if not display_url.startswith("twitter"):
+                    urls.append(display_url)
                
     return hashtags, urls        
 
     
 def frequencies(dataframe):
-    print(type(dataframe))
     #create list of all entities
     
   # extract hashtags from text except ones we are gathering on
     hashtags = []
     urls = []
     remove_hashtags = [s.strip('#') for s in settings.TRACK_TERMS]
-    print(remove_hashtags)
                                
     for entity in dataframe['entities']:
         hashtag_list, url_list = extract_entities(entity)
@@ -147,9 +149,19 @@ def trending(df1, df2, merge_on):
 def make_media_graph(media_list):
     g = ig.Graph(directed=False)
     for lst in media_list:
+        #remove repeated items from list
+        lst = list(set(lst))   
         if lst and len(lst) >= 2:
-            combos = itertools.combinations(lst)
-            g.add_edges(combos)
+            # check to see if vertecy is in graph and if not add
+            for item in lst:
+                try: 
+                    g.vs.find(name=item)
+                except:
+                    g.add_vertices(item)
+            combos = itertools.combinations(lst,2)
+     #       print(list(combos))
+            for combo in combos:
+                g.add_edge(source = combo[0],target=combo[1])
     return g        
             
     
@@ -184,9 +196,7 @@ def weekly_mung():
     mask2 = (df['created'] < one_week_ago) & (df['created'] >= two_weeks_ago)
     #temporarily leave mask 1 in so there is data populated for testing
     df_last_week = df.loc[mask1]
-    print('df_last_week is a: ' + str(type(df_last_week)))
     this_week_urls, this_week_hashtags = frequencies(df_this_week)
-    print(this_week_urls)
     last_week_urls, last_week_hashtags = frequencies(df_last_week)
     trending_hashtags = trending(this_week_hashtags,last_week_hashtags,'labels')
     trending_urls = trending(this_week_urls,last_week_urls,'labels')
@@ -209,21 +219,36 @@ def weekly_mung():
     def user_urls(grouped_entities):
 
         url_list = []
-        for x in grouped_entities:
-        
+        for x in grouped_entities: 
             _ , urls = extract_entities(x)
             url_list += [x.split('/')[0] for x in urls]
         return url_list
             
      #grouped dataframe with list of urls shared by each tweeter   
-     
-    
     media_df = df.groupby(by=['user_name'])['entities'].apply(list).apply(user_urls)
+    
+    #make graph
     graph = make_media_graph(list(media_df))
-    layout = graph
+    #apply fr layout in 3d to get coordinates
+    layout = graph.layout_fruchterman_reingold_3d()
+    
+    #append 3d layout to chart data
+    
+    #takes graph object and returns dict in format suitable for plotly.js
+    def make_plotly_graph(g, layout):
+        return {
+                "x":[coord[0] for coord in layout.coords],
+                "y":[coord[1] for coord in layout.coords],
+                "z":[coord[2] for coord in layout.coords],
+                "text":[node["name"] for node in g.vs],
+                "marker":g.degree()
+                }
+    
+    chart_data['media_graph'] = make_plotly_graph(graph, layout)   
 
-    
-    
+    #delete older records from memory
+    del_query_str = "DELETE FROM " + settings.TABLE_NAME + " WHERE created <= " + str((now - (week * 2)).strftime("%Y-%m-%d"))      
+    db_mem.query(del_query_str)    
     
     
   
@@ -231,7 +256,7 @@ def weekly_mung():
 weekly_mung()
 
     
-schedule.every(5).minutes.do(weekly_mung)
+schedule.every(1).week.do(weekly_mung)
 
 while 1:
     schedule.run_pending()

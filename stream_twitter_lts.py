@@ -16,9 +16,25 @@ import private_keys
 #auth twitter
 api = tweepy.API(auth_handler=private_keys.auth, wait_on_rate_limit=True,wait_on_rate_limit_notify=True)
 
-
 #setting up logging
-logging.basicConfig(filename='history.log', filemode='w',level=logging.DEBUG)
+#logging.basicConfig(filename='history.log', filemode='w',level=logging.DEBUG)
+
+ # create logger with 'lts'
+logger = logging.getLogger('twitter_lts')
+logger.setLevel(logging.DEBUG)
+ # create console handler with a higher log level
+ch = logging.StreamHandler()
+ch.setLevel(logging.ERROR)
+ # create file handler which logs even debug messages
+fh = logging.FileHandler('spam.log',mode='w')
+fh.setLevel(logging.DEBUG)
+ # create formatter and add it to the handlers
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+fh.setFormatter(formatter)
+ch.setFormatter(formatter)
+# add the handlers to the logger
+logger.addHandler(fh)
+logger.addHandler(ch)
 
 db_lts = dataset.connect(settings.CONNECTION_STRING_LTS)
 
@@ -49,7 +65,7 @@ def store_tweet(tweet,database):
             ))
         except Exception as exc:
             print(str(database) + " insert error: " + str(type(exc)))
-        
+            
 
 lts = db_lts[settings.TABLE_NAME]     
 
@@ -59,13 +75,13 @@ class StreamListener(tweepy.StreamListener):
         if status.retweeted:
             return
         store_tweet(status,lts)
+        logger.info('tweet object inserted')
 
     def on_error(self, status_code):
         if status_code == 420:
             #returning False in on_data disconnects the stream
+            logger.error('on_error: ' + str(status_code))
             return False
-    
-
 
 
 stream_listener = StreamListener()
@@ -74,7 +90,7 @@ stream.filter(track=settings.TRACK_TERMS)
     
     
     
-                    
+                
 
     
     
