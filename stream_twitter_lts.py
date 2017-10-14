@@ -15,7 +15,6 @@ from private_keys import TwitterStreamCreds
 import time
 from datetime import datetime
 
-#auth twitter
 
 #setting up logging
 #logging.basicConfig(filename='history.log', filemode='w',level=logging.DEBUG)
@@ -51,7 +50,7 @@ def store_tweet(tweet,database):
         blob = TextBlob(text)
         sent = blob.sentiment
         entities_json = json.dumps(tweet["entities"])
-        
+       	logger.info(name + " | " + text) 
         try: database.insert(dict(
                 text=text,
                 user_name=name,
@@ -67,6 +66,7 @@ def store_tweet(tweet,database):
         except Exception as exc:
             logger.error(" insert error: " + str(exc))
             
+        
 
    
 

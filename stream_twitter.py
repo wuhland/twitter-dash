@@ -77,24 +77,8 @@ def store_tweet(tweet,database):
 
         
 
-    
 
-class StreamListener(tweepy.StreamListener):
 
-    def on_status(self, status):
-        if status.retweeted:
-            return
-        store_tweet(status,memory)
-        store_tweet(status,lts)
-
-    def on_error(self, status_code):
-        if status_code == 420:
-            
-            #returning False in on_data disconnects the stream
-            return False
-    def on_disconnect(self, notice):
-        return
-    
 class MyStreamer(TwitterStreamCreds):
 
     def on_success(self, data):
