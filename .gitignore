@@ -1,7 +1,9 @@
-/private.py
-/lts.db
-/history.log
-/twitter_private.py
-/aws_private.py
+private.py
+private_keys.py
+private_keys.pyc
+lts.db
+history.log
+twitter_private.py
+aws_private.py
 /__pycache__/*
-/nohup.out
+nohup.out

@@ -6,22 +6,22 @@ Created on Tue Oct  3 17:45:05 2017
 """
 
 import settings
-import tweepy
 from textblob import TextBlob
 import dataset
 import logging
 import json
 import private_keys
+from private_keys import TwitterStreamCreds
+import time
+from datetime import datetime
 
-#auth twitter
-api = tweepy.API(auth_handler=private_keys.auth, wait_on_rate_limit=True,wait_on_rate_limit_notify=True)
 
 #setting up logging
 #logging.basicConfig(filename='history.log', filemode='w',level=logging.DEBUG)
 
  # create logger with 'lts'
 logger = logging.getLogger('twitter_lts')
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
  # create console handler with a higher log level
 ch = logging.StreamHandler()
 ch.setLevel(logging.ERROR)
@@ -37,20 +37,20 @@ logger.addHandler(fh)
 logger.addHandler(ch)
 
 db_lts = dataset.connect(settings.CONNECTION_STRING_LTS)
+lts = db_lts[settings.TABLE_NAME]  
 
 def store_tweet(tweet,database):
-        text = tweet.text
-        print(text)
-        name = tweet.user.screen_name
-        user_created = tweet.user.created_at
-        followers = tweet.user.followers_count
-        id_str = tweet.id_str
-        created = tweet.created_at
-        retweets = tweet.retweet_count
+        text = tweet["text"]
+        name = tweet["user"]["screen_name"]
+        user_created = datetime.strptime(tweet["user"]["created_at"],'%a %b %d %H:%M:%S +0000 %Y')
+        followers = tweet["user"]["followers_count"]
+        id_str = tweet["id_str"]
+        created = datetime.strptime(tweet["created_at"],'%a %b %d %H:%M:%S +0000 %Y')
+        retweets = tweet["retweet_count"]
         blob = TextBlob(text)
         sent = blob.sentiment
-        entities_json = json.dumps(tweet.entities)
-        
+        entities_json = json.dumps(tweet["entities"])
+       	logger.info(name + " | " + text) 
         try: database.insert(dict(
                 text=text,
                 user_name=name,
@@ -64,36 +64,42 @@ def store_tweet(tweet,database):
                 entities = entities_json
             ))
         except Exception as exc:
+            logger.error(" insert error: " + str(exc))
             
-            logger.error(str(database) + " insert error: " + str(type(exc)))
         
 
-lts = db_lts[settings.TABLE_NAME]     
+   
 
-class StreamListener(tweepy.StreamListener):
+class MyStreamer(TwitterStreamCreds):
 
-    def on_status(self, status):
-        if status.retweeted:
+    def on_success(self, data):
+        if data['retweeted']:
             return
-        store_tweet(status,lts)
+        store_tweet(data,lts)
         logger.info('tweet object inserted')
 
-    def on_error(self, status_code):
+    def on_error(self, status_code, data):
         if status_code == 420:
             #returning False in on_data disconnects the stream
-            logger.error('on_error: ' + str(status_code))
-            return False
+            logger.error('rate limited')
+            time.sleep(60 * 15)
+            
+            
+    
+stream_listener = MyStreamer()
+#grab list of keywords or just the one keyword
+def grab_tracks(tracklist):
+    if len(tracklist) > 1:
+        string = ', '.join(tracklist)
+    else:
+        string = tracklist[0]
+    return string
+stream_listener.statuses.filter(track=grab_tracks(settings.TRACK_TERMS))
+    
+    
+        
 
 
-stream_listener = StreamListener()
-stream = tweepy.Stream(auth=api.auth, listener=stream_listener)
-stream.filter(track=settings.TRACK_TERMS)
-    
-    
-    
-                
-
-    
     
   
 
