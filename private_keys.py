@@ -17,10 +17,8 @@ ACCESS_TOKEN_SECRET = 'IeFjq3ycaD7hoLiegbVeeIJXM3yqjkrDaxPxdnmAOHUNX'
 
 conn = S3Connection(AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY)
 class TwitterStreamCreds(TwythonStreamer):
-    CONSUMER_KEY,
-    CONSUMER_SECRET,
-    ACCESS_TOKEN,
-    ACCESS_TOKEN_SECRET
+    def __init__(self):
+        super().__init__(CONSUMER_KEY,CONSUMER_SECRET,ACCESS_TOKEN,ACCESS_TOKEN_SECRET)
 
 
 

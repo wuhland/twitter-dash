@@ -1,7 +1,7 @@
-/private.py
-/lts.db
-/history.log
-/twitter_private.py
-/aws_private.py
+private.py
+lts.db
+history.log
+twitter_private.py
+aws_private.py
 /__pycache__/*
 
