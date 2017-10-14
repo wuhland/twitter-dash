@@ -26,8 +26,8 @@ logger.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
 ch.setLevel(logging.ERROR)
  # create file handler which logs even debug messages
-fh = logging.FileHandler('spam.log',mode='w')
-fh.setLevel(logging.DEBUG)
+fh = logging.FileHandler('history.log',mode='w')
+fh.setLevel(logging.INFO)
  # create formatter and add it to the handlers
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 fh.setFormatter(formatter)
@@ -64,8 +64,9 @@ def store_tweet(tweet,database):
                 entities = entities_json
             ))
         except Exception as exc:
-            print(str(database) + " insert error: " + str(type(exc)))
             
+            logger.error(str(database) + " insert error: " + str(type(exc)))
+        
 
 lts = db_lts[settings.TABLE_NAME]     
 
