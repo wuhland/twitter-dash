@@ -14,7 +14,8 @@ import private_keys
 from private_keys import TwitterStreamCreds
 import time
 from datetime import datetime
-
+from socket import error as SocketError
+import errno
 
 #setting up logging
 #logging.basicConfig(filename='history.log', filemode='w',level=logging.DEBUG)
@@ -73,8 +74,12 @@ def store_tweet(tweet,database):
 class MyStreamer(TwitterStreamCreds):
 
     def on_success(self, data):
+        print(data['text'])
         if data['retweeted']:
             return
+        if hasattr(data,'retweeted_status'):
+            data['entities'] = data['retweeted_status']['entities']
+            data['text'] = data['retweeted_status']['text']
         store_tweet(data,lts)
         logger.info('tweet object inserted')
 
@@ -86,7 +91,6 @@ class MyStreamer(TwitterStreamCreds):
             
             
     
-stream_listener = MyStreamer()
 #grab list of keywords or just the one keyword
 def grab_tracks(tracklist):
     if len(tracklist) > 1:
@@ -94,8 +98,15 @@ def grab_tracks(tracklist):
     else:
         string = tracklist[0]
     return string
-stream_listener.statuses.filter(track=grab_tracks(settings.TRACK_TERMS))
-    
+
+#trying to handle connection disconnect error
+try:
+    stream_listener = MyStreamer()
+    stream_listener.statuses.filter(track=grab_tracks(settings.TRACK_TERMS))
+except SocketError as e:
+    if e.errno != errno.ECONNRESET:
+        raise
+    pass    
     
         
 
