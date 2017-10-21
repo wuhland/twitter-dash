@@ -21,8 +21,20 @@ import igraph as ig
 import itertools
 from private_keys import TwitterStreamCreds
 import time
+import numpy
 
 
+#encodes numpy types as python for exporting chart data
+class MyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, numpy.integer):
+            return int(obj)
+        elif isinstance(obj, numpy.floating):
+            return float(obj)
+        elif isinstance(obj, numpy.ndarray):
+            return obj.tolist()
+        else:
+            return super(MyEncoder, self).default(obj)
 #setting up logging
 
  # create logger with 'lts'
@@ -75,8 +87,6 @@ def store_tweet(tweet,database):
         except Exception as exc:
             logger.error(" insert error: " + str(exc))
 
-        
-
 
 
 class MyStreamer(TwitterStreamCreds):
@@ -97,17 +107,18 @@ class MyStreamer(TwitterStreamCreds):
     
 stream_listener = MyStreamer()
 
+
+
+stream_listener.statuses.filter(track=grab_tracks(settings.TRACK_TERMS))
+   
+
 #grab list of keywords or just the one keyword
 def grab_tracks(tracklist):
     if len(tracklist) > 1:
         string = ', '.join(tracklist)
     else:
         string = tracklist[0]
-    return string
-
-stream_listener.statuses.filter(track=grab_tracks(settings.TRACK_TERMS))
-    
-
+    return string 
         
 #functions to run during weekly mung of database
 def extract_entities(entities):
@@ -144,11 +155,20 @@ def frequencies(dataframe):
         if url_list:
             urls += url_list
     hashtag_freqs = pd.value_counts(hashtags).to_frame().reset_index()
-    hashtag_freqs.columns = ["labels","counts"]
+    hashtag_freqs.columns = ["labels","values"]
     url_freqs =  pd.value_counts(urls).to_frame().reset_index()
-    url_freqs.columns = ["labels","counts"]
+    url_freqs.columns = ["labels","values"]
     
     return url_freqs, hashtag_freqs
+
+def noun_frequencies(noun_lists,remove_list):
+    nouns = []
+    for noun_list in noun_lists:
+        noun_list = [noun for noun in noun_list if noun not in remove_list]
+        nouns += noun_list
+    chart_data = make_frequency_data(nouns)
+    return chart_data
+            
     
     
  
@@ -182,12 +202,8 @@ def make_media_graph(media_list):
      #       print(list(combos))
             for combo in combos:
                 g.add_edge(source = combo[0],target=combo[1])
-    return g        
-            
-    
-def weekly_mung():
-
-    chart_data = {}    
+    return g
+               
  #   df = pd.DataFrame(data=db_mem.all(),index=None)
     df = pd.DataFrame(columns=lts.columns)
    # df = pd.read_csv("fakedata.csv")
@@ -196,13 +212,16 @@ def weekly_mung():
         created = pd.to_datetime(tweet['created'],format='%a %b %d %H:%M:%S +0000 %Y')
         for key in tweet.keys():       
             df.loc[created,key] = tweet[key]
-            
-        
+               
     
     #convert datetimes 
     df['user_created'] = pd.to_datetime(df['user_created'],format='%a %b %d %H:%M:%S +0000 %Y')
     df['created'] = pd.to_datetime(df['created'],format='%a %b %d %H:%M:%S +0000 %Y')
 
+    df['day'] = df['created'].apply(lambda x:x.weekday())
+    df['nouns'] = df['text'].apply(lambda x: TextBlob(x).noun_phrases)
+    
+      
     #split between this week and last
     now = pd.to_datetime('now')
     
@@ -216,11 +235,18 @@ def weekly_mung():
     mask2 = (df['created'] < one_week_ago) & (df['created'] >= two_weeks_ago)
     #temporarily leave mask 1 in so there is data populated for testing
     df_last_week = df.loc[mask1]
+    
+    
     this_week_urls, this_week_hashtags = frequencies(df_this_week)
     last_week_urls, last_week_hashtags = frequencies(df_last_week)
+    
     trending_hashtags = trending(this_week_hashtags,last_week_hashtags,'labels')
     trending_urls = trending(this_week_urls,last_week_urls,'labels')
+
     
+    # replace values from indexed days of the week to the explicit names
+    day_of_the_week_replacements = {"day":{0:"Mon",1:"Tues",2:"Wed",3:"Thurs",4:"Fri",5:"Sat",6:"Sun"}}                  
+    chart_data["tweeting_freqs"] = make_frequency_data(list(df_this_week['day']),replacements=day_of_the_week_replacements)
     chart_data['top_hashtags'] = {'x':list(this_week_hashtags.head()['labels']),
               'y':list(this_week_hashtags.head()['counts']
               )}
@@ -257,6 +283,134 @@ def weekly_mung():
     #takes graph object and returns dict in format suitable for plotly.js
     def make_plotly_graph(g, layout):
         return {
+                "x":list([coord[0] for coord in layout.coords]),
+                "y":list([coord[1] for coord in layout.coords]),
+                "z":list([coord[2] for coord in layout.coords]),
+                "text":[node["name"] for node in g.vs],
+                "marker":list(g.degree())
+                }
+            
+def add_sentiment_lab(df):
+    def label_polarity(num):
+        polarity = ""
+        if(num < 0):
+            polarity = "negative"
+        elif (num > 0):
+            polarity = "positive"
+        else:
+            polarity = "neutral"
+        return polarity 
+    df["sentiment_lab"] = df["polarity"].map(label_polarity)
+    return df
+
+def make_frequency_data(lst,replacements = None):
+     #generate sentiment props
+    frequency_df = pd.value_counts(lst).to_frame().reset_index()
+    frequency_df.columns = ["labels","values"]
+    # if replacements replace
+    if replacements is not None:
+        print(replacements)
+        frequency_df.replace(to_replace = replacements)
+        print(frequency_df.dtypes)
+        print(frequency_df)
+
+    #only top ten values at most    
+    frequency_df = frequency_df.head(10)    
+    return {'labels':list(frequency_df['labels']),
+                          'values':list(frequency_df['values'])
+                          }
+    
+def get_nouns(text):
+    blob = TextBlob(text)
+    return blob.noun_phrases
+       
+def weekly_mung():
+
+    chart_data = {}    
+ #   df = pd.DataFrame(data=db_mem.all(),index=None)
+    df = pd.DataFrame(columns=lts.columns)
+   # df = pd.read_csv("fakedata.csv")
+
+    for tweet in lts:
+        created = pd.to_datetime(tweet['created'],format='%a %b %d %H:%M:%S +0000 %Y')
+        for key in tweet.keys():       
+            df.loc[created,key] = tweet[key]
+               
+    
+    #convert datetimes 
+    df['user_created'] = pd.to_datetime(df['user_created'],format='%a %b %d %H:%M:%S +0000 %Y')
+    df['created'] = pd.to_datetime(df['created'],format='%a %b %d %H:%M:%S +0000 %Y')
+
+    df['day'] = df['created'].apply(lambda x:x.weekday())
+    df['nouns'] = df['text'].apply(lambda x: TextBlob(x).noun_phrases)
+    
+    #add labels
+    df = add_sentiment_lab(df)
+    
+      
+    #split between this week and last
+    now = pd.to_datetime('now')
+    
+    week = DateOffset(weeks=1)    
+    one_week_ago = now - week
+    two_weeks_ago = now - (week * 2)
+    #last week
+    mask1 = (df['created'] < now) & (df['created'] >= one_week_ago)
+    df_this_week = df.loc[mask1]
+    #two weeks ago
+    mask2 = (df['created'] < one_week_ago) & (df['created'] >= two_weeks_ago)
+    #temporarily leave mask 1 in so there is data populated for testing
+    df_last_week = df.loc[mask1]
+    
+    
+    this_week_urls, this_week_hashtags = frequencies(df_this_week)
+    last_week_urls, last_week_hashtags = frequencies(df_last_week)
+    
+    trending_hashtags = trending(this_week_hashtags,last_week_hashtags,'labels')
+    trending_urls = trending(this_week_urls,last_week_urls,'labels')
+
+    
+    # replace values from indexed days of the week to the explicit names
+    day_of_the_week_replacements = {"labels":{0:"Mon",1:"Tues",2:"Wed",3:"Thurs",4:"Fri",5:"Sat",6:"Sun"}}                  
+    chart_data["tweeting_freqs"] = make_frequency_data(list(df_this_week['day']),replacements=day_of_the_week_replacements)
+    chart_data['top_hashtags'] = {'x':list(this_week_hashtags.head(10)['labels']),
+              'y':list(this_week_hashtags.head()['values']
+              )}
+    chart_data['top_urls'] = {'x':list(this_week_urls.head(10)['labels']),
+              'y':list(this_week_urls.head(10)['values']
+              )}
+    chart_data['trending_hashtags'] = {'x':list(trending_hashtags.head()['labels']),
+              'y':list(trending_hashtags.head(10)['pct_change']
+              )} 
+    chart_data['trending_urls'] = {'x':list(trending_urls.head()['labels']),
+              'y':list(trending_urls.head(10)['pct_change']
+              )}
+    chart_data['top_nouns'] = noun_frequencies(list(df['nouns']),['rt','syria'])
+    chart_data['sentiment_pie'] = make_frequency_data(list(df['sentiment_lab']))
+    
+    
+    #function to parse entities and return list of tlds shared 
+    def user_urls(grouped_entities):
+
+        url_list = []
+        for x in grouped_entities: 
+            _ , urls = extract_entities(x)
+            url_list += [x.split('/')[0] for x in urls]
+        return url_list
+            
+     #grouped dataframe with list of urls shared by each tweeter   
+    media_df = df.groupby(by=['user_name'])['entities'].apply(list).apply(user_urls)
+    
+    #make graph
+    graph = make_media_graph(list(media_df))
+    #apply fr layout in 3d to get coordinates
+    layout = graph.layout_fruchterman_reingold_3d()
+    
+    #append 3d layout to chart data
+    
+    #takes graph object and returns dict in format suitable for plotly.js
+    def make_plotly_graph(g, layout):
+        return {
                 "x":[coord[0] for coord in layout.coords],
                 "y":[coord[1] for coord in layout.coords],
                 "z":[coord[2] for coord in layout.coords],
@@ -265,6 +419,10 @@ def weekly_mung():
                 }
     
     chart_data['media_graph'] = make_plotly_graph(graph, layout)   
+    
+    with open('charts.json','w') as outfile:
+        json.dump(chart_data,outfile,cls=MyEncoder)
+    
 
     #delete older records from memory
     del_query_str = "DELETE FROM " + settings.TABLE_NAME + " WHERE created <= " + str((now - (week * 2)).strftime("%Y-%m-%d"))      
