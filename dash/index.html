@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>#White Helmets</title>
+    <!--JQuery core JS -->
+    <script src="resources/jquery-3.2.1.min.js"></script>
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="resources/bootstrap.min.css">
+    <!-- get media sources from gist -->
+    <script type="text/javascript" src="https://rawgit.com/wuhland/818aa2fa303d661aeb85b864276e34d9/raw/8b27ec093c1b42bc239229f7162b43dffaa65be6/wh_alt_media.js"></script>
+    <!-- Custom styles for this template -->
+    <link href="starter-template.css" rel="stylesheet">
+
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+
+  <div class="container">
+    <nav class="navbar navbar-light bg-faded">
+      <a class="navbar-brand">#WhiteHelmets Dashboard</a>
+    </nav>
+
+	  <div class="row top-buffer">
+      <div class="col-sm-12" >
+        <div class="chart" >
+			     <div id="media-graph"></div>
+        </div>
+      </div>
+    </div>
+    <div class="row top-buffer" style="height:300px">
+      <div class="col-sm-4" >
+        <div class="chart">
+			     <div id="top-hashtags"></div>
+        </div>
+      </div>
+      <div class="col-sm-4">
+        <div class="chart">
+			     <div id="trending-hashtags"></div>
+        </div>
+      </div>
+      <div class="col-sm-4">
+        <div class="chart">
+          <div id="sentiment-pie"></div>
+        </div>
+      </div>
+    </div>
+    <div class="row top-buffer">
+      <div class="col-sm-4">
+        <div class="chart">
+          <div id="top-urls"></div>
+        </div>
+      </div>
+      <div class="col-sm-4">
+        <div class="chart">
+          <div id="trending-urls"></div>
+        </div>
+      </div>
+      <div class="col-sm-4">
+        <div class="chart">
+          <div id="tweeting-freq"></div>
+        </div>
+      </div>
+    </div>
+    <div class="row top-buffer">
+      <div class="col-sm-6">
+        <div class="chart">
+          <div  id="top-nouns"></div>
+        </div>
+      </div>
+        <div class="col-sm-6">
+          <div class="chart">
+            <div id="trending-nouns"></div>
+          </div>
+
+        </div>
+    </div>
+  </div><!-- /.container -->
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="resources/jquery-3.2.1.min.js"></script>
+    <script src="resources/bootstrap.min.js"></script>
+        <!-- Plotyly-js core JS -->
+    <script src="resources/plotly-latest.min.js"></script>
+    <!--handlebars-js -->
+    <script src="resources/handlebars-v4.0.11.js"></script>
+	<!-- app js -->
+    <script type="text/javascript" src="app.js"></script>
+    <script id="trending-table" type="text/x-handlebars-template">
+      <table class="table table-sm">
+		<thead class="thead-inverse">
+        	<tr>
+        	  <th>{{labelHeading}}</th>
+        	  <th>{{valueHeading}}</th>
+        	</tr>
+		</thead>
+        {{#each items}}
+          <tr>
+            <th>{{label}}</th>
+            <th>{{value}}</th>
+          </tr>
+        {{/each}}
+      </table>
+    </script>
+    <script>window.jQuery || document.write('<script src="/assets/js/vendor/jquery.min.js"><\/script>')</script>
+
+
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+  </body>
+</html>
