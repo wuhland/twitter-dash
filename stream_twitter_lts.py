@@ -16,6 +16,7 @@ import time
 from datetime import datetime
 from socket import error as SocketError
 import errno
+import sys
 
 #setting up logging
 #logging.basicConfig(filename='history.log', filemode='w',level=logging.DEBUG)
@@ -40,6 +41,8 @@ logger.addHandler(ch)
 db_lts = dataset.connect(settings.CONNECTION_STRING_LTS)
 lts = db_lts[settings.TABLE_NAME]  
 
+time_start = time.time()
+
 def store_tweet(tweet,database):
         text = tweet["text"]
         name = tweet["user"]["screen_name"]
@@ -48,10 +51,8 @@ def store_tweet(tweet,database):
         id_str = tweet["id_str"]
         created = datetime.strptime(tweet["created_at"],'%a %b %d %H:%M:%S +0000 %Y')
         retweets = tweet["retweet_count"]
-        blob = TextBlob(text)
-        sent = blob.sentiment
         entities_json = json.dumps(tweet["entities"])
-       	logger.info(name + " | " + text) 
+      # 	logger.info(name + " | " + text) 
         try: database.insert(dict(
                 text=text,
                 user_name=name,
@@ -60,8 +61,6 @@ def store_tweet(tweet,database):
                 id_str=id_str,
                 created=created,
                 retweet_count=retweets,
-                polarity=sent.polarity,
-                subjectivity=sent.subjectivity,
                 entities = entities_json
             ))
         except Exception as exc:
@@ -76,12 +75,14 @@ class MyStreamer(TwitterStreamCreds):
     def on_success(self, data):
         print(data['text'])
         if data['retweeted']:
+            #logger.info('tweet blob retweeted = true')
             return
         if hasattr(data,'retweeted_status'):
+           # logger.info('retweeted object detected, entities exchanged')
             data['entities'] = data['retweeted_status']['entities']
             data['text'] = data['retweeted_status']['text']
         store_tweet(data,lts)
-        logger.info('tweet object inserted')
+        #logger.info('tweet object inserted')
 
     def on_error(self, status_code, data):
         if status_code == 420:
@@ -103,10 +104,11 @@ def grab_tracks(tracklist):
 try:
     stream_listener = MyStreamer()
     stream_listener.statuses.filter(track=grab_tracks(settings.TRACK_TERMS))
-except SocketError as e:
-    if e.errno != errno.ECONNRESET:
-        raise
-    pass    
+except:
+    e= sys.exc_info()[0]
+    logger.error("Error: " + str(e)) 
+    logger.info("__%s  seconds___" %(time.time() - time_start))
+    pass   
     
         
 
