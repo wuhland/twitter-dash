@@ -19,13 +19,13 @@ import errno
 import sys
 
 #setting up logging
-#logging.basicConfig(filename='history.log', filemode='w',level=logging.DEBUG)
+#logging.basicConfig(filename='history.log', filemode='w',level=logging.INFO)
 
  # create logger with 'lts'
 logger = logging.getLogger('twitter_lts')
 logger.setLevel(logging.INFO)
  # create console handler with a higher log level
-ch = logging.StreamHandler()
+ch = logging.StreamHandler(sys.stdout)
 ch.setLevel(logging.ERROR)
  # create file handler which logs even debug messages
 fh = logging.FileHandler('history.log',mode='w')
