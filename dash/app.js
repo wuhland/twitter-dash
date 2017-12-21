@@ -1,7 +1,7 @@
 var d3 = Plotly.d3;
 var WIDTH_IN_PERCENT_OF_PARENT = 90;
 var HEIGHT_IN_PERCENT_OF_PARENT = 90;
-var HEIGHT = 400;
+var HEIGHT = 450;
 
 d3.json("/charts.json" ,function(charts) {
 	console.log(charts)
@@ -83,10 +83,12 @@ d3.json("/charts.json" ,function(charts) {
 	}
 	function make_trending_data(dict,titleArray){
 		var data = {}
-		data["labelHeading"] = titleArray[0]
-		data["valueHeading"] = titleArray[1]
+		data["title"] = titleArray[0]
+		data["labelHeading"] = titleArray[1]
+		data["valueHeading"] = titleArray[2]
 		data["items"] = []
-		for (i=0; i < dict.values.length; i++){
+
+		for (i=dict.values.length-1; i >= 0; i--){
 			data.items.push({label: dict.labels[i],value: dict.values[i]})
 		}
 		return data
@@ -102,9 +104,11 @@ d3.json("/charts.json" ,function(charts) {
 	var top_nouns_data = row_chart_data(charts.top_nouns);
 	var trending_nouns_data = row_chart_data(charts.trending_nouns);
 	var tweeting_frequency_data = bar_chart_data(charts.tweeting_freqs);
+	console.log(tweeting_frequency_data)
 
 	//make pie chart data
 	var sentiment_pie_data = pie_chart_data(charts.sentiment_pie)
+
 	function color_code_media(check) {
 		 if (media_sources.indexOf(check) > -1) {
 			return "rgb(243,23,23)"
@@ -130,35 +134,67 @@ d3.json("/charts.json" ,function(charts) {
 				return new_scaled_data;
 			}
 
-			var nodes = dict.nodes
+			var nodes_alt = dict.nodes_alt;
+			var nodes_source = dict.nodes_source;
 			var edges = dict.edges
-			colors = Array.from(nodes.text, color_code_media);
+	//		colors = Array.from(nodes.text, color_code_media);
+	//	colors = '#fffff'
 
 			var trace1 = {
-				x:nodes.x,
-				y:nodes.y,
-				z:nodes.z,
+				name:"Fake News Media",
+				x:nodes_alt.x,
+				y:nodes_alt.y,
+				z:nodes_alt.z,
 				mode:"markers+text",
-				text:nodes.text,
+				text:nodes_alt.text,
+
 				marker:{
-					color:colors,
-					size:map_markers(nodes.marker)
+					color:"red",
+					size:map_markers(nodes_alt.marker),
+					showlegend:true,
+
+
 				},
+				hoverinfo:"text",
+				type:"scatter3d"
+			}
+
+			var trace2 = {
+				name:"Website",
+				x:nodes_source.x,
+				y:nodes_source.y,
+				z:nodes_source.z,
+				mode:"markers+text",
+				text:nodes_source.text,
+
+				marker:{
+					color:"rgb(24,227,172)",
+					size:map_markers(nodes_source.marker),
+					showlegend:true,
+
+
+				},
+				hoverinfo:"text",
 				type:"scatter3d"
 			}
 			var data = []
+
 			for (var key in edges) {
 				if (!edges.hasOwnProperty(key)) continue;
 					var edge = edges[key];
 					edge.type = 'scatter3d'
+					edge.hoverinfo = 'skip'
+					edge.showlegend = false
 					edge.mode = 'lines'
 					edge.opacity = 0.8
 					edge.line = {color:'rgb(170,170,170)'}
 					data.push(edge);
 				}
 			data.push(trace1);
+			data.push(trace2);
 			return data;
 		}
+
 
 
 	var axis_legend_att = {
@@ -166,13 +202,13 @@ d3.json("/charts.json" ,function(charts) {
 			showgrid:false,
 			ticks:'',
 			zeroline:false,
+			showline:false,
 			showticklabels:false,
-			autotick:false,
+			showspikes:false,
 			ticks:''
 		}
 
 	var graph_layout = {
-		showlegend: false,
 		autosize: true,
 		scene:{
 			xaxis: axis_legend_att,
@@ -181,7 +217,12 @@ d3.json("/charts.json" ,function(charts) {
 		},
 	}
 	var barchart_layout = {
-		autosize:true
+		autosize:true,
+		margin: {
+			pad: 4,
+			r:15,
+			l:130,
+		}
 
 	}
 
@@ -195,15 +236,20 @@ d3.json("/charts.json" ,function(charts) {
 	tweeting_frequency_layout.title= "Tweets last week";
 	tweeting_frequency_layout.titlefont = titlefont;
 	var sentiment_pie_layout = {};
-	sentiment_pie_layout.title = "Sentiment of tweets last week";
+	sentiment_pie_layout.title = "Tweet Sentiment";
 	sentiment_pie_layout.titlefont = titlefont;
-	graph_layout.title = "Network Graph of media shared in #WhiteHelmets conversation"
+	graph_layout.title = "Network Graph of Media Shared in #WhiteHelmets Conversation"
 	graph_layout.titlefont = titlefont;
 	graph_data = graph_data(charts.media_graph)
 
-	Plotly.plot(graph_node,graph_data,graph_layout);
-	barchart_layout.title="Top Hashtags"
-	Plotly.plot(top_hashtags_node,top_hashtags_data,barchart_layout);
+	//modebar buttons to remove
+	var basicChartOptions = {modeBarButtonsToRemove: ['select2d','sendDataToCloud','lasso2d','hoverClosestCartesian','hoverCompareCartesian'],displaylogo:false};
+
+	Plotly.plot(graph_node,graph_data,graph_layout,basicChartOptions);
+
+	barchart_layout.title="Top Hashtags";
+	var hashtag_layout = barchart_layout
+	Plotly.plot(top_hashtags_node,top_hashtags_data,hashtag_layout,basicChartOptions);
 
 	var source = $("#trending-table").html();
 	var template = Handlebars.compile(source);
@@ -211,22 +257,24 @@ d3.json("/charts.json" ,function(charts) {
 //	Plotly.plot(trending_hashtags_node,trending_hashtags_data,barchart_layout);
 
 
-	$('#trending-hashtags').children().append(template(make_trending_data(charts.trending_hashtags,["Hashtags","% increase"])));
+	$('#trending-hashtags').children().append(template(make_trending_data(charts.trending_hashtags,["Trending Hashtags","Hashtag","% increase"])));
 
 
-	barchart_layout.title="Top Domains"
-	Plotly.plot(top_urls_node,top_urls_data,barchart_layout);
+	barchart_layout.title="Top Domains";
+	var domain_layout = barchart_layout;
+	Plotly.plot(top_urls_node,top_urls_data,domain_layout,basicChartOptions);
 //	barchart_layout.title="Trending Domains"
 //	Plotly.plot(trending_urls_node,trending_urls_data,barchart_layout);
-$('#trending-urls').children().append(template(make_trending_data(charts.trending_urls,["URL's","% increase"])));
-	barchart_layout.title="Top Nouns"
-	Plotly.plot(top_nouns_node,top_nouns_data,barchart_layout);
+$('#trending-urls').children().append(template(make_trending_data(charts.trending_urls,["Trending Domains","URL","% increase"])));
+	barchart_layout.title = "Top Nouns";
+	var nouns_layout = barchart_layout;
+	Plotly.plot(top_nouns_node,top_nouns_data, nouns_layout ,basicChartOptions);
 //	barchart_layout.title="Trending Nouns"
 //	Plotly.plot(trending_nouns_node,trending_nouns_data,barchart_layout);
-$('#trending-nouns').children().append(template(make_trending_data(charts.trending_nouns,["Nouns","% increase"])));
+$('#trending-nouns').children().append(template(make_trending_data(charts.trending_nouns,["Trending Noun Phrases","Noun","% increase"])));
 
-	Plotly.plot(sentiment_pie_node,sentiment_pie_data,sentiment_pie_layout);
-	Plotly.plot(tweeting_frequency_node,tweeting_frequency_data, tweeting_frequency_layout);
+	Plotly.plot(sentiment_pie_node,sentiment_pie_data,sentiment_pie_layout,basicChartOptions);
+	Plotly.plot(tweeting_frequency_node,tweeting_frequency_data, tweeting_frequency_layout,basicChartOptions);
 
 	window.addEventListener('resize',function() {Plotly.Plots.resize(graph_node);})
 	window.addEventListener('resize',function() {Plotly.Plots.resize(top_hashtags_node);})

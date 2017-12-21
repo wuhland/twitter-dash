@@ -14,7 +14,7 @@
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="resources/bootstrap.min.css">
     <!-- get media sources from gist -->
-    <script type="text/javascript" src="https://rawgit.com/wuhland/818aa2fa303d661aeb85b864276e34d9/raw/8b27ec093c1b42bc239229f7162b43dffaa65be6/wh_alt_media.js"></script>
+    <script type="text/javascript" src="resources/wh_alt_media.js"></script>
     <!-- Custom styles for this template -->
     <link href="starter-template.css" rel="stylesheet">
 
@@ -36,21 +36,21 @@
       <a class="navbar-brand">#WhiteHelmets Dashboard</a>
     </nav>
 
-	  <div class="row top-buffer">
+	  <div class="row top-buffer" >
       <div class="col-sm-12" >
-        <div class="chart" >
-			     <div id="media-graph"></div>
+        <div class="chart">
+			     <div id="media-graph"  style ="height:750px"></div>
         </div>
       </div>
     </div>
-    <div class="row top-buffer" style="height:300px">
+    <div class="row top-buffer" >
       <div class="col-sm-4" >
         <div class="chart">
 			     <div id="top-hashtags"></div>
         </div>
       </div>
       <div class="col-sm-4">
-        <div class="chart">
+        <div class="chart" class="trending">
 			     <div id="trending-hashtags"></div>
         </div>
       </div>
@@ -67,7 +67,7 @@
         </div>
       </div>
       <div class="col-sm-4">
-        <div class="chart">
+        <div class="chart" class="trending">
           <div id="trending-urls"></div>
         </div>
       </div>
@@ -83,9 +83,9 @@
           <div  id="top-nouns"></div>
         </div>
       </div>
-        <div class="col-sm-6">
-          <div class="chart">
-            <div id="trending-nouns"></div>
+        <div class="col-sm-6" >
+          <div class="chart" class="trending">
+            <div id="trending-nouns" ></div>
           </div>
 
         </div>
@@ -105,13 +105,15 @@
 	<!-- app js -->
     <script type="text/javascript" src="app.js"></script>
     <script id="trending-table" type="text/x-handlebars-template">
-      <table class="table table-sm">
-		<thead class="thead-inverse">
-        	<tr>
-        	  <th>{{labelHeading}}</th>
-        	  <th>{{valueHeading}}</th>
-        	</tr>
-		</thead>
+
+      <table class="table table-sm table-striped thead-inverse table-responsive">
+        <h3 align="center"> {{title}} </h3>
+    		<thead >
+            	<tr>
+            	  <th>{{labelHeading}}</th>
+            	  <th>{{valueHeading}}</th>
+            	</tr>
+    		</thead>
         {{#each items}}
           <tr>
             <th>{{label}}</th>

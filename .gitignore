@@ -1,9 +1,11 @@
 private.py
 private_keys.py
 private_keys.pyc
+settings.py
 lts.db
 history.log
 twitter_private.py
 aws_private.py
 /__pycache__/*
+/service_creds/*
 nohup.out

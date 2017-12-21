@@ -5,6 +5,7 @@ body {
   padding: 40px 15px;
   text-align: center;
 }
+/*
 .row {
   vertical-align:top;
 }
@@ -16,6 +17,10 @@ body {
 	padding-right:10px;
 	padding-left:10px;
 
+}
+*/
+.table-sm tbody th {
+  font-weight:normal;
 }
 
 .top-buffer {
@@ -35,4 +40,7 @@ body {
 .vertical-align {
     display: flex;
     align-items: center;
+}
+.trending {
+  padding-top:5px;
 }

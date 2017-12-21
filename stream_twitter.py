@@ -23,6 +23,10 @@ import time
 import numpy
 import re
 
+haters = []
+with open("wh_alt_media.txt","r") as fileIn:
+    haters = fileIn.read().splitlines()
+
 
 #encodes numpy types as python for exporting chart data
 class MyEncoder(json.JSONEncoder):
@@ -61,59 +65,6 @@ db_mem = dataset.connect(settings.CONNECTION_STRING)
 lts = db_lts[settings.TABLE_NAME]
 memory = db_mem[settings.TABLE_NAME]
 
-#def store_tweet(tweet,database):
-#        text = tweet["text"]
-#        name = tweet["user"]["screen_name"]
-#        user_created = datetime.strptime(tweet["user"]["created_at"],'%a %b %d %H:%M:%S +0000 %Y')
-#        followers = tweet["user"]["followers_count"]
-#        id_str = tweet["id_str"]
-#        created = datetime.strptime(tweet["created_at"],'%a %b %d %H:%M:%S +0000 %Y')
-#        retweets = tweet["retweet_count"]
-#        blob = TextBlob(text)
-#        sent = blob.sentiment
-#        entities_json = json.dumps(tweet["entities"])
-#
-#        try: database.insert(dict(
-#                text=text,
-#                user_name=name,
-#                user_created=user_created,
-#                user_followers=followers,
-#                id_str=id_str,
-#                created=created,
-#                retweet_count=retweets,
-#                polarity=sent.polarity,
-#                subjectivity=sent.subjectivity,
-#                entities = entities_json
-#            ))
-#        except Exception as exc:
-#            logger.error(" insert error: " + str(exc))
-#
-#
-#
-#class MyStreamer(TwitterStreamCreds):
-#
-#    def on_success(self, data):
-#        if data['retweeted']:
-#            return
-#        store_tweet(data,lts)
-#        logger.info('tweet object inserted')
-#
-#    def on_error(self, status_code, data):
-#        if status_code == 420:
-#            #returning False in on_data disconnects the stream
-#            logger.error('rate limited')
-#            time.sleep(60 * 15)
-#
-#
-##grab list of keywords or just the one keyword
-#def grab_tracks(tracklist):
-#    if len(tracklist) > 1:
-#        string = ', '.join(tracklist)
-#    else:
-#        string = tracklist[0]
-#    return string
-#stream_listener = MyStreamer()
-#stream_listener.statuses.filter(track=grab_tracks(settings.TRACK_TERMS))
 
 
 
@@ -178,9 +129,9 @@ def list_from_lists(lists,remove_list):
 #function takes two df of frequencies and compares the difference, returns on df with percentage change
 
 def trending(df1, df2, merge_on):
- 
+
     concat = pd.merge(df1,df2,on=merge_on,how='left')
-    
+
     concat = concat.fillna(0)
 
     concat.columns = ['labels','last_week','this_week']
@@ -192,9 +143,12 @@ def trending(df1, df2, merge_on):
 
 #create media list: gets a list of lists of media sources found in twitter
 #outputs an igraph network dataset
-def make_media_graph(media_list, remove_list= None):
+def make_media_graph(media_list, remove_list= None, combine_list = None):
     g = ig.Graph(directed=False)
     for lst in media_list:
+        if combine_list:
+            #I hope this works, this is to combine url concatinators and such
+            lst = [combine_list[0] if item in combine_list else item for item in lst]
         #remove repeated items from list
         lst = list(set(lst))
         if remove_list:
@@ -230,9 +184,9 @@ def make_graph_edges(graph, layout):
         component_coords = [node_coords[node] for node in adjlist]
         n += 1
         for coords in component_coords:
-            x.append(numpy.around(coords[0],3))
-            y.append(numpy.around(coords[1],3))
-            z.append(numpy.around(coords[2],3))
+            x.append(round(coords[0],3))
+            y.append(round(coords[1],3))
+            z.append(round(coords[2],3))
         component_traces["trace" + str(n + 1)] = {'x':x,'y':y,'z':z}
     return component_traces
 
@@ -258,7 +212,8 @@ def make_frequency_data(lst,lab_replacements = None):
         if frequency_df["labels"].dtype == numpy.int64:
             frequency_df.sort_values('labels',inplace=True, ascending=True)
         frequency_df.replace(to_replace = lab_replacements,inplace=True)
-
+        
+    print(data_from_freq_df(frequency_df))
     return data_from_freq_df(frequency_df)
 #rotates layout 90d along x axis if taller than wide: takes layout, returns layout
 def graph_along_min_dim(layout):
@@ -276,9 +231,9 @@ def dfsiter(graph, root):
         vertex = stack.pop()
         yield vertex
         not_visited_neis = set(graph.neighbors(vertex)) - visited
-        stack.extend(not_visited_neis) 
+        stack.extend(not_visited_neis)
         visited.update(not_visited_neis)
-        
+
 
 
 def weekly_mung():
@@ -306,7 +261,7 @@ def weekly_mung():
 
 
     df['nouns'] = df['text'].apply(lambda x: TextBlob(x).noun_phrases)
-    
+
     #add labels
     df = add_sentiment_lab(df)
 
@@ -315,8 +270,8 @@ def weekly_mung():
 
     week = DateOffset(weeks=1)
     #temp 2 and 3 weeks
-    one_week_ago = now - (week *4)
-    two_weeks_ago = now - (week * 5)
+    one_week_ago = now - (week *5)
+    two_weeks_ago = now - (week * 6)
     #last week
     mask1 = (df['created'] < now) & (df['created'] >= one_week_ago)
     df_this_week = df.loc[mask1]
@@ -359,10 +314,16 @@ def weekly_mung():
     media_df = df.groupby(by=['user_name'])['entities'].apply(list).apply(user_urls)
 
 
-    media_remove_list=["youtube.com","youtu.be","goo.gl","share.es","fb.me"]
+    domain_combine_list=[["youtube.com","youtu.be","m.youtube.com"],["google.com","goo.gl"] ,["facebook.com","fb.me"]]
     #make graph
-    graph = make_media_graph(list(media_df))
+    graph = make_media_graph(list(media_df), combine_list=domain_combine_list)
     #apply fr layout in 3d to get coordinates
+    layout = graph.layout_fruchterman_reingold_3d()
+
+    #rotate layout allong min axis
+    layout = graph_along_min_dim(layout)
+
+             #apply fr layout in 3d to get coordinates
     layout = graph.layout_fruchterman_reingold_3d()
 
     #rotate layout allong min axis
@@ -371,14 +332,44 @@ def weekly_mung():
     #takes graph object and returns dict in format suitable for plotly.js
     #TODO add something to check for media sources in nodes and color code
     def make_plotly_graph(g, layout):
-        nodes ={"x":[numpy.around(coord[0],3) for coord in layout.coords],
-                "y":[numpy.around(coord[1],3) for coord in layout.coords],
-                "z":[numpy.around(coord[2],3) for coord in layout.coords],
-                "text":[node["name"] for node in g.vs],
-                "marker":g.degree()
-                }
+        print("trying to match")
+        print(len(layout.coords))
+        print(g.degree())
+        print(len(g.vs))
+        nodes = {"alt":{"x":[],"y":[],"z":[],"text":[],"marker":[]},
+                        "source":{"x":[],"y":[],"z":[],"text":[],"marker":[]}}
+        sizes = g.degree()
+        names = [node["name"] for node in g.vs]
+        for idx, value in enumerate(layout.coords):
+            size = sizes[idx]
+            name = names[idx]
+            coords = layout.coords[idx]
+         
+            if name in haters:
+                nodes["alt"]["x"].append(round(coords[0],3))
+                nodes["alt"]["y"].append(round(coords[1],3))
+                nodes["alt"]["z"].append(round(coords[2],3))
+                nodes["alt"]["text"].append(name)
+                nodes["alt"]["marker"].append(size)
+            else :
+                nodes["source"]["x"].append(round(coords[0],3))
+                nodes["source"]["y"].append(round(coords[1],3))
+                nodes["source"]["z"].append(round(coords[2],3))
+                nodes["source"]["text"].append(name)
+                nodes["source"]["marker"].append(size)
+         
+         
+#        nodes ={"x":[numpy.around(coord[0],3) for coord in layout.coords],
+#                "y":[numpy.around(coord[1],3) for coord in layout.coords],
+#                "z":[numpy.around(coord[2],3) for coord in layout.coords],
+#
+#                "text":[node["name"] for node in g.vs],
+#                "marker":g.degree()
+#                }
+                
         edges = make_graph_edges(g,layout)
-        return {'nodes':nodes,'edges':edges}
+        return {'nodes_alt':nodes["alt"],'nodes_source':nodes["source"],'edges':edges}
+
 
     chart_data['media_graph'] = make_plotly_graph(graph, layout)
 
@@ -387,7 +378,7 @@ def weekly_mung():
 
 
     #delete older records from memory
-#    del_query_str = "DELETE FROM " + settings.TABLE_NAME + " WHERE created <= " + str((now - (week * 2)).strftime("%Y-%m-%d"))
+#    del_query_str = "DELETE FROM " + settings.TABLE_NAME + " WHERE created <= " + str((now - (week * 6)).strftime("%Y-%m-%d"))
 #    db_mem.query(del_query_str)
 
 
