@@ -3,7 +3,7 @@ var WIDTH_IN_PERCENT_OF_PARENT = 90;
 var HEIGHT_IN_PERCENT_OF_PARENT = 90;
 var HEIGHT = 450;
 
-d3.json("/charts.json" ,function(charts) {
+d3.json("charts.json" ,function(charts) {
 	console.log(charts)
 	//make d3 selections into html
 	var graph = d3.select('#media-graph');
