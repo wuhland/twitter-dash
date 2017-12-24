@@ -9,7 +9,7 @@ Created on Tue Oct  3 17:45:05 2017
 import settings
 from datetime import datetime
 import schedule
-from boto.s3.connection import S3Connection
+import boto3
 from textblob import TextBlob
 import dataset
 import pandas as pd
@@ -26,6 +26,10 @@ import re
 haters = []
 with open("wh_alt_media.txt","r") as fileIn:
     haters = fileIn.read().splitlines()
+
+#instantiates boto object
+s3 = boto3.resource('s3')
+obj = s3.Object('wh-twitter','charts.json')
 
 
 #encodes numpy types as python for exporting chart data
@@ -60,14 +64,8 @@ logger.addHandler(fh)
 logger.addHandler(ch)
 
 db_lts = dataset.connect(settings.CONNECTION_STRING_LTS)
-db_mem = dataset.connect(settings.CONNECTION_STRING)
 
 lts = db_lts[settings.TABLE_NAME]
-memory = db_mem[settings.TABLE_NAME]
-
-
-
-
 
 #functions to run during weekly mung of database
 def extract_entities(entities):
@@ -168,8 +166,6 @@ def make_media_graph(media_list, remove_list= None, combine_list = None):
 
 
 def make_graph_edges(graph, layout):
-#    for vertex in graph.dfsiter(0):
-#        print(vertex.index)
     component_traces = {}
     node_coords = layout.coords
     n = 0
@@ -213,7 +209,6 @@ def make_frequency_data(lst,lab_replacements = None):
             frequency_df.sort_values('labels',inplace=True, ascending=True)
         frequency_df.replace(to_replace = lab_replacements,inplace=True)
         
-    print(data_from_freq_df(frequency_df))
     return data_from_freq_df(frequency_df)
 #rotates layout 90d along x axis if taller than wide: takes layout, returns layout
 def graph_along_min_dim(layout):
@@ -289,7 +284,6 @@ def weekly_mung():
 
     trending_hashtags = trending(this_week_hashtags,last_week_hashtags,'labels')
     trending_urls = trending(this_week_urls,last_week_urls,'labels')
-    print(trending_urls.head())
 
     # replace values from indexed days of the week to the explicit names
     day_of_the_week_replacements = {"labels":{0:"Mon",1:"Tues",2:"Wed",3:"Thurs",4:"Fri",5:"Sat",6:"Sun"}}
@@ -332,10 +326,6 @@ def weekly_mung():
     #takes graph object and returns dict in format suitable for plotly.js
     #TODO add something to check for media sources in nodes and color code
     def make_plotly_graph(g, layout):
-        print("trying to match")
-        print(len(layout.coords))
-        print(g.degree())
-        print(len(g.vs))
         nodes = {"alt":{"x":[],"y":[],"z":[],"text":[],"marker":[]},
                         "source":{"x":[],"y":[],"z":[],"text":[],"marker":[]}}
         sizes = g.degree()
@@ -359,13 +349,6 @@ def weekly_mung():
                 nodes["source"]["marker"].append(size)
          
          
-#        nodes ={"x":[numpy.around(coord[0],3) for coord in layout.coords],
-#                "y":[numpy.around(coord[1],3) for coord in layout.coords],
-#                "z":[numpy.around(coord[2],3) for coord in layout.coords],
-#
-#                "text":[node["name"] for node in g.vs],
-#                "marker":g.degree()
-#                }
                 
         edges = make_graph_edges(g,layout)
         return {'nodes_alt':nodes["alt"],'nodes_source':nodes["source"],'edges':edges}
@@ -373,9 +356,9 @@ def weekly_mung():
 
     chart_data['media_graph'] = make_plotly_graph(graph, layout)
 
-    with open('charts.json','w') as outfile:
-        json.dump(chart_data,outfile,cls=MyEncoder)
-
+#    with open('charts.json','w') as outfile:
+#        json.dump(chart_data,outfile,cls=MyEncoder)
+    obj.put(Body=json.dumps(chart_data, cls=MyEncoder))
 
     #delete older records from memory
 #    del_query_str = "DELETE FROM " + settings.TABLE_NAME + " WHERE created <= " + str((now - (week * 6)).strftime("%Y-%m-%d"))
