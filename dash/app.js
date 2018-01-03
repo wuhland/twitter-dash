@@ -4,6 +4,9 @@ var HEIGHT_IN_PERCENT_OF_PARENT = 90;
 var HEIGHT = 450;
 
 d3.json("charts.json" ,function(charts) {
+
+	//add date to navbar
+	d3.select("#date").text(charts.date.formatted)
 	console.log(charts)
 	//make d3 selections into html
 	var graph = d3.select('#media-graph');
