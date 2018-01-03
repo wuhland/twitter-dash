@@ -220,16 +220,40 @@ def graph_along_min_dim(layout):
     return layout
 
 def dfsiter(graph, root):
+    paths = []
+    
     stack = [root]
-    visited = set(stack)
+    visited = set(stack)  
     while stack:
+        path=[]
+        path.append(list(visited))
         vertex = stack.pop()
         yield vertex
         not_visited_neis = set(graph.neighbors(vertex)) - visited
+        if not_visited_neis == 1:
+            paths.append(path)
+            path = []
         stack.extend(not_visited_neis)
         visited.update(not_visited_neis)
+        
+    
+
+def route(root, dic, edge_list):
+    path = []
+    path.append(root)
+    path.append(dic[root])
 
 
+def find_routes(graph, root):
+    visited, starts, parents = graph.bfs(root)
+    #list of edges as tuples
+    edges = [e.tuple for e in graph.es]
+    while edges:
+        node_dict = {}
+        for index, visit_node in enumerate(visited):
+            node_dict[parent_node] = parents[index]
+        route = []
+       
 
 def weekly_mung():
 
@@ -265,8 +289,8 @@ def weekly_mung():
 
     week = DateOffset(weeks=1)
     #temp 2 and 3 weeks
-    one_week_ago = now - (week *5)
-    two_weeks_ago = now - (week * 6)
+    one_week_ago = now - (week)
+    two_weeks_ago = now - (week * 2)
     #last week
     mask1 = (df['created'] < now) & (df['created'] >= one_week_ago)
     df_this_week = df.loc[mask1]
@@ -322,6 +346,8 @@ def weekly_mung():
 
     #rotate layout allong min axis
     layout = graph_along_min_dim(layout)
+    
+   
 
     #takes graph object and returns dict in format suitable for plotly.js
     #TODO add something to check for media sources in nodes and color code
@@ -336,15 +362,15 @@ def weekly_mung():
             coords = layout.coords[idx]
          
             if name in haters:
-                nodes["alt"]["x"].append(round(coords[0],3))
-                nodes["alt"]["y"].append(round(coords[1],3))
-                nodes["alt"]["z"].append(round(coords[2],3))
+                nodes["alt"]["x"].append(round(coords[0],2))
+                nodes["alt"]["y"].append(round(coords[1],2))
+                nodes["alt"]["z"].append(round(coords[2],2))
                 nodes["alt"]["text"].append(name)
                 nodes["alt"]["marker"].append(size)
             else :
-                nodes["source"]["x"].append(round(coords[0],3))
-                nodes["source"]["y"].append(round(coords[1],3))
-                nodes["source"]["z"].append(round(coords[2],3))
+                nodes["source"]["x"].append(round(coords[0],2))
+                nodes["source"]["y"].append(round(coords[1],2))
+                nodes["source"]["z"].append(round(coords[2],2))
                 nodes["source"]["text"].append(name)
                 nodes["source"]["marker"].append(size)
          
@@ -355,19 +381,16 @@ def weekly_mung():
 
 
     chart_data['media_graph'] = make_plotly_graph(graph, layout)
-
-#    with open('charts.json','w') as outfile:
-#        json.dump(chart_data,outfile,cls=MyEncoder)
+    
+    chart_data['time'] = {'year':now.year,'month':now.month,'day':now.day, 'formatted':now.strftime('%m/%d/%Y %I%p')}
+      
     obj.put(Body=json.dumps(chart_data, cls=MyEncoder))
 
-    #delete older records from memory
-#    del_query_str = "DELETE FROM " + settings.TABLE_NAME + " WHERE created <= " + str((now - (week * 6)).strftime("%Y-%m-%d"))
-#    db_mem.query(del_query_str)
 
 
-weekly_mung()
-#
-#schedule.every(1).week.do(weekly_mung)
-#
-#while 1:
-#    schedule.run_pending()
+#run weekly mung every friday at noon
+schedule.every(1).friday.at("12:00").do(weekly_mung)
+
+while True:
+    schedule.run_pending()
+    time.sleep(1)

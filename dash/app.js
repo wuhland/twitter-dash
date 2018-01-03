@@ -136,12 +136,13 @@ d3.json("charts.json" ,function(charts) {
 
 			var nodes_alt = dict.nodes_alt;
 			var nodes_source = dict.nodes_source;
-			var edges = dict.edges
+			var edges = dict.edges;
 	//		colors = Array.from(nodes.text, color_code_media);
 	//	colors = '#fffff'
 
 			var trace1 = {
 				name:"Fake News Media",
+				showlegend:true,
 				x:nodes_alt.x,
 				y:nodes_alt.y,
 				z:nodes_alt.z,
@@ -151,9 +152,6 @@ d3.json("charts.json" ,function(charts) {
 				marker:{
 					color:"red",
 					size:map_markers(nodes_alt.marker),
-					showlegend:true,
-
-
 				},
 				hoverinfo:"text",
 				type:"scatter3d"
@@ -161,6 +159,7 @@ d3.json("charts.json" ,function(charts) {
 
 			var trace2 = {
 				name:"Website",
+				showlegend:true,
 				x:nodes_source.x,
 				y:nodes_source.y,
 				z:nodes_source.z,
@@ -170,7 +169,7 @@ d3.json("charts.json" ,function(charts) {
 				marker:{
 					color:"rgb(24,227,172)",
 					size:map_markers(nodes_source.marker),
-					showlegend:true,
+
 
 
 				},
@@ -247,8 +246,9 @@ d3.json("charts.json" ,function(charts) {
 
 	Plotly.plot(graph_node,graph_data,graph_layout,basicChartOptions);
 
-	barchart_layout.title="Top Hashtags";
-	var hashtag_layout = barchart_layout
+
+	var hashtag_layout = Object.assign({},barchart_layout);
+	hashtag_layout.title= "Top Hashtags";
 	Plotly.plot(top_hashtags_node,top_hashtags_data,hashtag_layout,basicChartOptions);
 
 	var source = $("#trending-table").html();
@@ -260,14 +260,17 @@ d3.json("charts.json" ,function(charts) {
 	$('#trending-hashtags').children().append(template(make_trending_data(charts.trending_hashtags,["Trending Hashtags","Hashtag","% increase"])));
 
 
-	barchart_layout.title="Top Domains";
-	var domain_layout = barchart_layout;
+
+	var domain_layout = Object.assign({}, barchart_layout);
+	domain_layout.title="Top Domains";
 	Plotly.plot(top_urls_node,top_urls_data,domain_layout,basicChartOptions);
 //	barchart_layout.title="Trending Domains"
 //	Plotly.plot(trending_urls_node,trending_urls_data,barchart_layout);
 $('#trending-urls').children().append(template(make_trending_data(charts.trending_urls,["Trending Domains","URL","% increase"])));
-	barchart_layout.title = "Top Nouns";
-	var nouns_layout = barchart_layout;
+
+
+	var nouns_layout = Object.assign({},barchart_layout);
+	nouns_layout.title = "Top Nouns";
 	Plotly.plot(top_nouns_node,top_nouns_data, nouns_layout ,basicChartOptions);
 //	barchart_layout.title="Trending Nouns"
 //	Plotly.plot(trending_nouns_node,trending_nouns_data,barchart_layout);
