@@ -73,7 +73,6 @@ def store_tweet(tweet,database):
 class MyStreamer(TwitterStreamCreds):
 
     def on_success(self, data):
-        print(data['text'])
         if data['retweeted']:
             #logger.info('tweet blob retweeted = true')
             return

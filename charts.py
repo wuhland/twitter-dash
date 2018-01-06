@@ -387,10 +387,10 @@ def weekly_mung():
     obj.put(Body=json.dumps(chart_data, cls=MyEncoder))
 
 
-
+weekly_mung()
 #run weekly mung every friday at noon
-schedule.every(1).friday.at("12:00").do(weekly_mung)
+#schedule.every(1).friday.at("12:00").do(weekly_mung)
 
-while True:
-    schedule.run_pending()
-    time.sleep(1)
+#while True:
+#    schedule.run_pending()
+#    time.sleep(1)
