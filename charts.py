@@ -30,6 +30,7 @@ with open("wh_alt_media.txt","r") as fileIn:
 #instantiates boto object
 s3 = boto3.resource('s3')
 obj = s3.Object('wh-twitter','charts.json')
+obj.set_acl('public_read')
 
 
 #encodes numpy types as python for exporting chart data
@@ -218,8 +219,9 @@ def graph_along_min_dim(layout):
     if ydiff > xdiff:
         layout.rotate(angle=90)
     return layout
-
-def dfsiter(graph, root):
+def reportPath(path):
+    print(path)
+def dfsiter(graph, root, vtx_callback=None, st_callback=None):
     paths = []
     
     stack = [root]
@@ -232,6 +234,8 @@ def dfsiter(graph, root):
         not_visited_neis = set(graph.neighbors(vertex)) - visited
         if not_visited_neis == 1:
             paths.append(path)
+            if st_callback:
+                st_callback(path)
             path = []
         stack.extend(not_visited_neis)
         visited.update(not_visited_neis)
@@ -383,6 +387,8 @@ def weekly_mung():
     chart_data['time'] = {'year':now.year,'month':now.month,'day':now.day, 'formatted':now.strftime('%m/%d/%Y %I%p')}
       
     obj.put(Body=json.dumps(chart_data, cls=MyEncoder))
+#    with open("charts.json", "w") as outFile:
+#        json.dump(chart_data,outFile,cls=MyEncoder)
 
 
 weekly_mung()
