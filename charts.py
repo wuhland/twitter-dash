@@ -258,9 +258,7 @@ def find_routes(graph, root):
 def weekly_mung():
 
     chart_data = {}
- #   df = pd.DataFrame(data=db_mem.all(),index=None)
     df = pd.DataFrame(columns=lts.columns)
-   # df = pd.read_csv("fakedata.csv")
 
     for tweet in lts:
         created = pd.to_datetime(tweet['created'],format='%a %b %d %H:%M:%S +0000 %Y')
