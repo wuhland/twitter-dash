@@ -116,7 +116,7 @@ def data_from_freq_df(frequency_df):
     return {'labels':list(frequency_df['labels']),
                           'values':list(frequency_df['values'])
                           }
-
+#TODO remove *... from list 
 def list_from_lists(lists,remove_list):
     items = []
     for lst in lists:
