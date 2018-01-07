@@ -30,7 +30,7 @@ with open("wh_alt_media.txt","r") as fileIn:
 #instantiates boto object
 s3 = boto3.resource('s3')
 obj = s3.Object('wh-twitter','charts.json')
-obj.set_acl('public_read')
+obj_acl = obj.Acl()
 
 
 #encodes numpy types as python for exporting chart data
@@ -387,6 +387,7 @@ def weekly_mung():
     chart_data['time'] = {'year':now.year,'month':now.month,'day':now.day, 'formatted':now.strftime('%m/%d/%Y %I%p')}
       
     obj.put(Body=json.dumps(chart_data, cls=MyEncoder))
+    obj_acl.put(ACL= 'public-read')
 #    with open("charts.json", "w") as outFile:
 #        json.dump(chart_data,outFile,cls=MyEncoder)
 
