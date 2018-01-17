@@ -9,3 +9,4 @@ aws_private.py
 /__pycache__/*
 /service_creds/*
 nohup.out
+charts.json
