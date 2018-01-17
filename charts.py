@@ -176,14 +176,15 @@ def make_graph_edges(graph, layout):
         newlist = []
         for i in adjlist:
            newlist += [i] + [n]
+           print(newlist)
 
         adjlist = newlist
         component_coords = [node_coords[node] for node in adjlist]
         n += 1
         for coords in component_coords:
-            x.append(round(coords[0],3))
-            y.append(round(coords[1],3))
-            z.append(round(coords[2],3))
+            x.append(round(coords[0],2))
+            y.append(round(coords[1],2))
+            z.append(round(coords[2],2))
         component_traces["trace" + str(n + 1)] = {'x':x,'y':y,'z':z}
     return component_traces
 
@@ -393,10 +394,11 @@ def weekly_mung():
 #    with open("charts.json", "w") as outFile:
 #        json.dump(chart_data,outFile,cls=MyEncoder)
 
+weekly_mung()
 
-run weekly mung every friday at noon
-schedule.every(1).friday.at("12:00").do(weekly_mung)
-
-while True:
-    schedule.run_pending()
-    time.sleep(1)
+#run weekly mung every friday at noon
+#schedule.every(1).friday.at("12:00").do(weekly_mung)
+#
+#while True:
+#    schedule.run_pending()
+#    time.sleep(1)
