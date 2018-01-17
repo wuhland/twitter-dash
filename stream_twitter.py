@@ -6,7 +6,6 @@ Created on Tue Oct  3 17:45:05 2017
 """
 
 import settings
-from textblob import TextBlob
 import dataset
 import logging
 import json
@@ -73,7 +72,6 @@ def store_tweet(tweet,database):
 class MyStreamer(TwitterStreamCreds):
 
     def on_success(self, data):
-        print(data['text'])
         if data['retweeted']:
             #logger.info('tweet blob retweeted = true')
             return
@@ -89,9 +87,9 @@ class MyStreamer(TwitterStreamCreds):
             #returning False in on_data disconnects the stream
             logger.error('rate limited')
             time.sleep(60 * 15)
-            
-            
-    
+        else:
+            logger.error("MyStreamer obj error code: " + status_code)
+
 #grab list of keywords or just the one keyword
 def grab_tracks(tracklist):
     if len(tracklist) > 1:
@@ -101,15 +99,19 @@ def grab_tracks(tracklist):
     return string
 
 #trying to handle connection disconnect error
-try:
-    stream_listener = MyStreamer()
-    stream_listener.statuses.filter(track=grab_tracks(settings.TRACK_TERMS))
-except:
-    e= sys.exc_info()[0]
-    logger.error("Error: " + str(e)) 
-    logger.info("__%s  seconds___" %(time.time() - time_start))
-    pass   
-    
+while True:
+    try:
+        stream_listener = MyStreamer()
+        stream_listener.statuses.filter(track=grab_tracks(settings.TRACK_TERMS))
+    except:
+	
+        e= sys.exc_info()[0]
+        logger.error("Error: " + str(e))
+        logger.info("__%s  seconds___" %(time.time() - time_start))
+        time.sleep(60)
+              
+
+
         
 
 
