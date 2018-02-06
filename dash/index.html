@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <!-- <script type="text/javascript">
+    window.onerror = function(message, url, lineNumber) {
+        // code to execute on an error
+        return true; // prevents browser error messages
+    };
+</script>  -->
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -15,6 +21,8 @@
     <link rel="stylesheet" href="bootstrap.min.css">
     <!-- Custom styles for this template -->
     <link href="starter-template.css" rel="stylesheet">
+    <!-- BC I want emoji -->
+    <link href="https://afeld.github.io/emoji-css/emoji.css" rel="stylesheet">
 
     <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
     <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
@@ -30,17 +38,32 @@
 
 
   <div class="container">
-    <nav class="navbar navbar-inverse bg-dark">
-      <a class="navbar-brand">#WhiteHelmets Dashboard</a>
-      <a class="navbar-brand">Last updated: <a class="navbar-brand" id="date"></a></a>
-    </nav>
+    <div class="page-header">
+      <h5>#WhiteHelmets Dashboard<small><span pull-right">  Last updated: <span id="date"></span></span></small></h5>
+
+    </div>
 
 	  <div class="row top-buffer" >
-      <div class="col-sm-12" >
-        <div class="chart">
-			     <div id="media-graph"  style ="height:750px"></div>
+      <div class="col-sm-8" >
+        <div >
+			     <div id="media-graph"  ></div>
         </div>
       </div>
+      <div class="col-sm-4" style="overflow-y:scroll">
+        <div class="frame">
+          <div class="hidden inner selected" style="opacity:0">
+          </div>
+          <div class="explainer inner" style="opacity:1">
+            <h5>Click Any Node</h5>
+            <p>This graph represents how media is being shared within the #whitehelmets conversation on twitter. Links are drawn between media sources that individuals share. In other words, if you shared a link to website <i class="em em-a"></i> and then later to website <i class="em em-b"></i> then I've drawn a link <i class="em em-ab"></i>. In that way we've built a network of how people (and sock-puppets <i class="em em-socks"></i><i class="em em-woman-facepalming"></i>) are influencing the conversation. Click any node to see what other media is connected. <span class="bg-danger">Highlighted</span> media are fake news.</p>
+          </div>
+        </div
+        <div class="connections">
+        </div>
+
+      </div>
+
+
     </div>
     <div class="row top-buffer" >
       <div class="col-sm-4" >

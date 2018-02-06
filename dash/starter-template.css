@@ -1,24 +1,11 @@
-body {
+/*body {
   padding-top: 50px;
-}
+}*/
 .starter-template {
   padding: 40px 15px;
   text-align: center;
 }
-/*
-.row {
-  vertical-align:top;
-}
-.gutter-10.row {
-	margin-right:10px;
-	margin-left:10px;
-}
-.gutter-10 > [class^="col-"], .gutter-10 > [class^="col-"] {
-	padding-right:10px;
-	padding-left:10px;
 
-}
-*/
 .table-sm tbody th {
   font-weight:normal;
 }
@@ -43,4 +30,30 @@ body {
 }
 .trending {
   padding-top:5px;
+}
+
+circle.node {
+  stroke: rgba(200,200,200,0.6);
+  stroke-width: 1.5px;
+}
+ text.node {
+  font: 9px helvetica;
+}
+line.link  {
+  stroke: #999;
+  stroke-opacity: 0.6;
+}
+p {
+  font-size: 12;
+}
+.inner {
+  position: absolute;
+
+}
+.danger, .bg-danger{
+  background-color:#7e1fdc !important;
+  color:white;
+}
+table.tr{
+  font-size:.75rem;
 }

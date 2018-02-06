@@ -146,8 +146,10 @@ def make_media_graph(media_list, remove_list= None, combine_list = None):
     g = ig.Graph(directed=False)
     for lst in media_list:
         if combine_list:
-            #I hope this works, this is to combine url concatinators and such
-            lst = [combine_list[0] if item in combine_list else item for item in lst]
+            for clist in combine_list:
+                #I hope this works, this is to combine url concatinators and such
+                lst = [clist[0] if item in clist else item for item in lst]
+            
         #remove repeated items from list
         lst = list(set(lst))
         if remove_list:
@@ -164,8 +166,18 @@ def make_media_graph(media_list, remove_list= None, combine_list = None):
                 g.add_edge(source = combo[0],target=combo[1])
     return g
 
-
-
+def make_graph_data(graph):
+    data = {"links":[],"nodes":[]}
+    degree_list = graph.degree()
+    for e in graph.get_edgelist():
+        data["links"].append({"source":e[0],"target":e[1]})
+    for n in graph.vs:
+        group = "media"
+        if n["name"] in haters:
+            group = "alt"            
+        data["nodes"].append({"id":n.index,"name":n["name"],"group":group,"degree":degree_list[n.index]})
+    return data    
+     
 def make_graph_edges(graph, layout):
     component_traces = {}
     node_coords = layout.coords
@@ -177,7 +189,6 @@ def make_graph_edges(graph, layout):
         for i in adjlist:
            newlist += [i] + [n]
            print(newlist)
-
         adjlist = newlist
         component_coords = [node_coords[node] for node in adjlist]
         n += 1
@@ -209,9 +220,9 @@ def make_frequency_data(lst,lab_replacements = None):
     if lab_replacements is not None:
         if frequency_df["labels"].dtype == numpy.int64:
             frequency_df.sort_values('labels',inplace=True, ascending=True)
-        frequency_df.replace(to_replace = lab_replacements,inplace=True)
-        
+        frequency_df.replace(to_replace = lab_replacements,inplace=True)       
     return data_from_freq_df(frequency_df)
+
 #rotates layout 90d along x axis if taller than wide: takes layout, returns layout
 def graph_along_min_dim(layout):
     boundaries = layout.boundaries()
@@ -219,49 +230,9 @@ def graph_along_min_dim(layout):
     ydiff = boundaries[1][1] - boundaries[0][1]
     if ydiff > xdiff:
         layout.rotate(angle=90)
-    return layout
-def reportPath(path):
-    print(path)
-def dfsiter(graph, root, vtx_callback=None, st_callback=None):
-    paths = []
-    
-    stack = [root]
-    visited = set(stack)  
-    while stack:
-        path=[]
-        path.append(list(visited))
-        vertex = stack.pop()
-        yield vertex
-        not_visited_neis = set(graph.neighbors(vertex)) - visited
-        if not_visited_neis == 1:
-            paths.append(path)
-            if st_callback:
-                st_callback(path)
-            path = []
-        stack.extend(not_visited_neis)
-        visited.update(not_visited_neis)
-        
-    
-
-def route(root, dic, edge_list):
-    path = []
-    path.append(root)
-    path.append(dic[root])
-
-
-def find_routes(graph, root):
-    visited, starts, parents = graph.bfs(root)
-    #list of edges as tuples
-    edges = [e.tuple for e in graph.es]
-    while edges:
-        node_dict = {}
-        for index, visit_node in enumerate(visited):
-            node_dict[parent_node] = parents[index]
-        route = []
-       
+    return layout  
 
 def weekly_mung():
-
     chart_data = {}
     df = pd.DataFrame(columns=lts.columns)
 
@@ -335,7 +306,7 @@ def weekly_mung():
     media_df = df.groupby(by=['user_name'])['entities'].apply(list).apply(user_urls)
 
 
-    domain_combine_list=[["youtube.com","youtu.be","m.youtube.com"],["google.com","goo.gl"] ,["facebook.com","fb.me"]]
+    domain_combine_list=[["youtube.com","youtu.be","m.youtube.com"],["google.com","goo.gl"] ,["facebook.com","fb.me","m.facebook.com"],["linkedin.com","lnkd.in"],["sputniknews.com","sptnkne.ws"],["rt.com","on.rt.com"],["twitter.com","mobile.twitter.com"],["thesyriacampaign.org","act.thesyriacampaign.org"]]
     #make graph
     graph = make_media_graph(list(media_df), combine_list=domain_combine_list)
     #apply fr layout in 3d to get coordinates
@@ -383,7 +354,7 @@ def weekly_mung():
         return {'nodes_alt':nodes["alt"],'nodes_source':nodes["source"],'edges':edges}
 
 
-    chart_data['media_graph'] = make_plotly_graph(graph, layout)
+    chart_data['media_graph'] = make_graph_data(graph)
     
     chart_data['time'] = {'year':now.year,'month':now.month,'day':now.day, 'formatted':now.strftime('%m/%d/%Y %I%p')}
       
@@ -392,15 +363,10 @@ def weekly_mung():
 #    with open("charts.json", "w") as outFile:
 #        json.dump(chart_data,outFile,cls=MyEncoder)
 
-weekly_mung()
+# weekly_mung()
 
-#run weekly mung every friday at noon
-#schedule.every(1).friday.at("12:00").do(weekly_mung)
-#
-#while True:
-#    schedule.run_pending()
-#    time.sleep(1)
-#weekly_mung()
+
+
 #run weekly mung every friday at noon
 schedule.every(1).friday.at("12:00").do(weekly_mung)
 
