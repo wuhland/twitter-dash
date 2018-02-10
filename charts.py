@@ -369,7 +369,7 @@ def weekly_mung():
 
 
 #run weekly mung every friday at noon
-schedule.every(1).tuesday.at("12:00").do(weekly_mung)
+schedule.every().day.at("12:00").do(weekly_mung)
 
 while True:
     schedule.run_pending()
