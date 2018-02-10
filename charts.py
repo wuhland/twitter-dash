@@ -307,8 +307,9 @@ def weekly_mung():
 
 
     domain_combine_list=[["youtube.com","youtu.be","m.youtube.com"],["google.com","goo.gl"] ,["facebook.com","fb.me","m.facebook.com"],["linkedin.com","lnkd.in"],["sputniknews.com","sptnkne.ws"],["rt.com","on.rt.com"],["twitter.com","mobile.twitter.com"],["thesyriacampaign.org","act.thesyriacampaign.org"]]
+    remove_list = ["youtube.com","twitter.com","share.es","google.com","paper.li","tl.gd","wp.me","tmblr.co","ow.ly","linkedin.com"]
     #make graph
-    graph = make_media_graph(list(media_df), combine_list=domain_combine_list)
+    graph = make_media_graph(list(media_df), combine_list=domain_combine_list, remove_list=remove_list)
     #apply fr layout in 3d to get coordinates
     layout = graph.layout_fruchterman_reingold_3d()
 

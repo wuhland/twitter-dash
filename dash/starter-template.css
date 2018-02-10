@@ -49,6 +49,7 @@ p {
 .inner {
   position: absolute;
 
+
 }
 .danger, .bg-danger{
   background-color:#7e1fdc !important;
@@ -56,4 +57,17 @@ p {
 }
 table.tr{
   font-size:.75rem;
+}
+.row {
+  margin-bottom:1px;
+
+}
+.graph {
+    height:400px;
+}
+.row-eq-height {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display:         flex;
 }
