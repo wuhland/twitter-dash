@@ -363,12 +363,12 @@ def weekly_mung():
 #    with open("charts.json", "w") as outFile:
 #        json.dump(chart_data,outFile,cls=MyEncoder)
 
-# weekly_mung()
+#weekly_mung()
 
 
 
 #run weekly mung every friday at noon
-schedule.every(1).friday.at("12:00").do(weekly_mung)
+schedule.every(1).tuesday.at("12:00").do(weekly_mung)
 
 while True:
     schedule.run_pending()
