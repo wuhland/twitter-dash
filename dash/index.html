@@ -13,6 +13,8 @@
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
     <meta name="description" content="">
     <meta name="author" content="">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="card.png">
 
     <title>#White Helmets</title>
     <!--JQuery core JS -->
@@ -43,27 +45,20 @@
 
     </div>
 
-	  <div class="row top-buffer" >
+	  <div class="row"  >
       <div class="col-sm-8" >
-        <div >
-			     <div id="media-graph"  ></div>
-        </div>
+  		  <div id="media-graph"></div>
       </div>
-      <div class="col-sm-4" style="overflow-y:scroll">
-        <div class="frame">
-          <div class="hidden inner selected" style="opacity:0">
+      <div class="col-sm-4 graph" style="overflow-y:auto">
+        <div class="frame" >
+          <div class="selected inner" style="opacity:0">
           </div>
           <div class="explainer inner" style="opacity:1">
-            <h5>Click Any Node</h5>
+            <h5><b>Click Any Node</b></h5>
             <p>This graph represents how media is being shared within the #whitehelmets conversation on twitter. Links are drawn between media sources that individuals share. In other words, if you shared a link to website <i class="em em-a"></i> and then later to website <i class="em em-b"></i> then I've drawn a link <i class="em em-ab"></i>. In that way we've built a network of how people (and sock-puppets <i class="em em-socks"></i><i class="em em-woman-facepalming"></i>) are influencing the conversation. Click any node to see what other media is connected. <span class="bg-danger">Highlighted</span> media are fake news.</p>
           </div>
-        </div
-        <div class="connections">
         </div>
-
       </div>
-
-
     </div>
     <div class="row top-buffer" >
       <div class="col-sm-4" >
@@ -126,7 +121,7 @@
     <script src="handlebars-v4.0.11.js"></script>
 	<!-- app js -->
     <script type="text/javascript" src="app.js"></script>
-    <script id="trending-table" type="text/x-handlebars-template">
+<!--    <script id="trending-table" type="text/x-handlebars-template">
 
       <table class="table table-sm table-striped thead-inverse table-responsive">
         <h3 align="center"> {{title}} </h3>
@@ -144,6 +139,7 @@
         {{/each}}
       </table>
     </script>
+  -->
     <script>window.jQuery || document.write('<script src="/assets/js/vendor/jquery.min.js"><\/script>')</script>
 
 

@@ -21,16 +21,11 @@ d3.json("charts.json" ,function(charts) {
 
 	//Constants for the SVG
 var width = 850,
-    height = 500,
-		radius = 5;
+    height = 400,
+		radius = 7;
 
 //Set up the colour scale
 var color = d3.scale.category20();
-
-	window.onerror = function(message, url, lineNumber) {
-			// code to execute on an error
-			return true; // prevents browser error messages
-	};
 
 //Set up the force layout
 var force = d3.layout.force()
