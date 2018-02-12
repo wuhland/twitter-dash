@@ -1,8 +1,9 @@
-var d3 = Plotly.d3;
+
+//var d3 = Plotly.d3;
 var WIDTH_IN_PERCENT_OF_PARENT = 90;
 var HEIGHT_IN_PERCENT_OF_PARENT = 90;
 var HEIGHT = 400;
-
+d3.selectAll('.flag').style('top','-30px').style('left','-30px');
 d3.json("charts.json" ,function(charts) {
 	console.log(charts);
 	//add date to navbar
@@ -23,9 +24,6 @@ d3.json("charts.json" ,function(charts) {
 var width = 850,
     height = 400,
 		radius = 7;
-
-//Set up the colour scale
-var color = d3.scale.category20();
 
 //Set up the force layout
 var force = d3.layout.force()
@@ -98,7 +96,7 @@ var force = d3.layout.force()
 	    .enter().append("g")
 	    .attr("class", "node")
 	    .call(force.drag)
-			.on('dblclick', connectedNodes);
+			.on('click', connectedNodes)
 
 	node.append("circle")
     .attr("r", function(d) { return node_scale(d.degree);})
@@ -230,10 +228,34 @@ var force = d3.layout.force()
 
 		var explainer = d3.select(".explainer")
 }
+	//function to animate flag on screen and then off again
+	var move_flag = function () {
+		var ease = d3.easeElastic;
+		d3.selectAll(".flag")
+			.filter(".putin")
+			.transition()
+			.ease(ease)
+			.duration(1000)
+			.style("top","0px").style("left","0px")
+			.transition().delay(3000).style("top","-40px").style("left","-40px");
+
+			d3.selectAll(".flag")
+				.filter(".bg")
+				.transition()
+				.duration(500)
+				.style("top","0px").style("left","0px")
+				.transition().delay(3000).style("top","-40px").style("left","-40px");
+
+	};
+
 	function connectedNodes() {
 	    if (toggle == 0) {
+
 	        //Reduce the opacity of all but the neighbouring nodes
 	        d = d3.select(this).node().__data__;
+					if (d.group == 'alt') {
+							move_flag();
+					}
 	        node.style("opacity", function (o) {
 	            return neighboring(d, o) | neighboring(o, d) ? 1 : 0.1;
 	        });
@@ -262,6 +284,8 @@ var force = d3.layout.force()
 	        link.style("opacity", 1);
 	        toggle = 0;
 	    }
+
+
 	};
 
 // 	function make_node(d3_selection) {

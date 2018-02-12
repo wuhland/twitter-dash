@@ -71,3 +71,9 @@ table.tr{
   display: -ms-flexbox;
   display:         flex;
 }
+.flag {
+  position:absolute;
+  width:40px;
+  height:40px;
+
+}
