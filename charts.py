@@ -48,13 +48,13 @@ class MyEncoder(json.JSONEncoder):
 #setting up logging
 
  # create logger with 'lts'
-logger = logging.getLogger('twitter_lts')
+logger = logging.getLogger('boto3')
 logger.setLevel(logging.INFO)
  # create console handler with a higher log level
 ch = logging.StreamHandler()
 ch.setLevel(logging.ERROR)
  # create file handler which logs even debug messages
-fh = logging.FileHandler('history.log',mode='w')
+fh = logging.FileHandler('charts.log',mode='w')
 fh.setLevel(logging.INFO)
  # create formatter and add it to the handlers
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -364,13 +364,13 @@ def weekly_mung():
 #    with open("charts.json", "w") as outFile:
 #        json.dump(chart_data,outFile,cls=MyEncoder)
 
-#weekly_mung()
+weekly_mung()
 
 
 
 #run weekly mung every friday at noon
-schedule.every().day.at("12:00").do(weekly_mung)
+#schedule.every().day.at("12:00").do(weekly_mung)
 
-while True:
-    schedule.run_pending()
-    time.sleep(1)
+#while True:
+#    schedule.run_pending()
+#    time.sleep(1)
