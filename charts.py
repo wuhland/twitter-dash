@@ -320,10 +320,16 @@ def weekly_mung():
 
      #grouped dataframe with list of urls shared by each tweeter
     media_df = df.groupby(by=['user_name'])['entities'].apply(list).apply(user_urls)
-
+    
+    #counts all the times people shared fake news
+    troll_shares = media_df.apply(lambda x: sum([y in haters for y in x]))
+    troll_shares = troll_shares.nlargest(10)
+    #adds 10 largest trolls
+    chart_data['trolls'] = troll_shares.to_dict()
+    
 
     domain_combine_list=[["youtube.com","youtu.be","m.youtube.com"],["google.com","goo.gl"] ,["facebook.com","fb.me","m.facebook.com"],["linkedin.com","lnkd.in"],["sputniknews.com","sptnkne.ws"],["rt.com","on.rt.com"],["twitter.com","mobile.twitter.com"],["thesyriacampaign.org","act.thesyriacampaign.org"]]
-    remove_list = ["youtube.com","twitter.com","share.es","google.com","paper.li","tl.gd","wp.me","tmblr.co","ow.ly","linkedin.com"]
+    remove_list = ["youtube.com","twitter.com","share.es","google.com","paper.li","tl.gd","wp.me","tmblr.co","ow.ly","linkedin.com","facebook.com"]
     #make graph
     graph = make_media_graph(list(media_df), combine_list=domain_combine_list, remove_list=remove_list)
     #apply fr layout in 3d to get coordinates
@@ -378,10 +384,10 @@ def weekly_mung():
     obj.put(Body=json.dumps(chart_data, cls=MyEncoder))
     obj_acl.put(ACL= 'public-read')
     print('put in amazon Done. ET: %s' %(str(elapsed_time)))
-#    with open("charts.json", "w") as outFile:
-#        json.dump(chart_data,outFile,cls=MyEncoder)
+ #   with open("charts.json", "w") as outFile:
+  #      json.dump(chart_data,outFile,cls=MyEncoder)
 
-#weekly_mung()
+weekly_mung()
 
 
 
