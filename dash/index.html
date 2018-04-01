@@ -1,12 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- <script type="text/javascript">
-    window.onerror = function(message, url, lineNumber) {
-        // code to execute on an error
-        return true; // prevents browser error messages
-    };
-</script>  -->
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -27,7 +21,7 @@
 <!--    <script src="https://d3js.org/d3-ease.v4.min.js"></script>
 -->
 
-    <!-- app js -->
+
 
 
     <!-- Bootstrap wants Tether -->
@@ -55,7 +49,7 @@
   <div class="container">
 
     <div class="page-header">
-      <h5>#WhiteHelmets Dashboard<small><span>  Last updated: <span id="date"></span></span></small></h5>
+      <h4>#WhiteHelmets Dashboard<small><span>  Last updated: <span id="date"></span></span></small></h4>
 
     </div>
 
@@ -75,51 +69,15 @@
       </div>
     </div>
     <div class="row top-buffer" >
-      <div class="col-sm-4" >
-        <div class="chart">
-			     <div id="top-hashtags"></div>
-        </div>
-      </div>
-      <div class="col-sm-4">
-        <div class="chart" class="trending">
-			     <div id="trending-hashtags"></div>
-        </div>
+      <div class="col-sm-8" >
+           <h5> Top trolls <small>by number of times they shared fakenews</small></h5>
+			     <div id="trolls"></div>
       </div>
       <div class="col-sm-4">
         <div class="chart">
-          <div id="sentiment-pie"></div>
+          <div id="media-graph2"></div>
         </div>
       </div>
-    </div>
-    <div class="row top-buffer">
-      <div class="col-sm-4">
-        <div class="chart">
-          <div id="top-urls"></div>
-        </div>
-      </div>
-      <div class="col-sm-4">
-        <div class="chart" class="trending">
-          <div id="trending-urls"></div>
-        </div>
-      </div>
-      <div class="col-sm-4">
-        <div class="chart">
-          <div id="tweeting-freq"></div>
-        </div>
-      </div>
-    </div>
-    <div class="row top-buffer">
-      <div class="col-sm-6">
-        <div class="chart">
-          <div  id="top-nouns"></div>
-        </div>
-      </div>
-        <div class="col-sm-6" >
-          <div class="chart" class="trending">
-            <div id="trending-nouns" ></div>
-          </div>
-
-        </div>
     </div>
   </div><!-- /.container -->
 
@@ -131,36 +89,17 @@
     <script src="bootstrap.min.js"></script>
 
         <!-- Plotyly-js core JS -->
-<!--    <script src="plotly-latest.min.js"></script> -->
-    <!--handlebars-js -->
-    <script src="handlebars-v4.0.11.js"></script>
-    <!--JQuery core JS -->
-    <script src="jquery-3.2.1.min.js"></script>
     <!-- minified D3 library -->
-   <script src="https://d3js.org/d3.v3.min.js"></script>
+   <script src="https://d3js.org/d3.v4.min.js"></script>
+   <script src="https://d3js.org/d3-force.v1.min.js"></script>
 
    <script src="https://d3js.org/d3-ease.v1.min.js"></script>
+   <script src="https://d3js.org/d3-scale.v2.min.js"></script>
+   <script src="https://d3js.org/d3-axis.v1.min.js"></script>
+   <script type="text/javascript" src="barchart_horizontal.js"></script>
    <script type="text/javascript" src="app.js"></script>
 
-<!--    <script id="trending-table" type="text/x-handlebars-template">
 
-      <table class="table table-sm table-striped thead-inverse table-responsive">
-        <h3 align="center"> {{title}} </h3>
-    		<thead >
-            	<tr>
-            	  <th>{{labelHeading}}</th>
-            	  <th>{{valueHeading}}</th>
-            	</tr>
-    		</thead>
-        {{#each items}}
-          <tr>
-            <th>{{label}}</th>
-            <th>{{value}}</th>
-          </tr>
-        {{/each}}
-      </table>
-    </script>
-  -->
     <script>window.jQuery || document.write('<script src="/assets/js/vendor/jquery.min.js"><\/script>')</script>
 
 
