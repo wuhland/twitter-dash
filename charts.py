@@ -252,8 +252,7 @@ def weekly_mung():
     print(len(ind))
     #make data frame
     df = pd.DataFrame(data=list(lts.all()),index=ind)
-  
-    
+     
     print('dataframe created. ET: %s' %(str(elapsed_time)))
 
     #convert datetimes
@@ -263,12 +262,18 @@ def weekly_mung():
     print('datetimes converted. ET: %s' %(str(elapsed_time)))
 
     df['day'] = df['created'].apply(lambda x: x.weekday())
+    print('lamda day, done')
     blobs = df['text'].apply(lambda x: TextBlob(x))
+    print('blobs, done')
     df['polarity'] = blobs.apply(lambda x: x.sentiment.polarity)
+    print('lamda polarity, done')
     df['subjectivity'] = blobs.apply(lambda x: x.sentiment.subjectivity)
+    print('lamda subjectivity, done')
     df['nouns'] = blobs.apply(lambda x: x.noun_phrases)  
-    df['text'] = df['text'].apply(lambda x: re.sub('(?<=^|(?<=[^a-zA-Z0-9-_\.]))@([A-Za-z]+[A-Za-z0-9]+)|(\w+\.\.\.)|(RT)|(#\w+)|(\.\.\.)','',x))
+    print('lamda nouns, done')
+  #  df['text'] = df['text'].apply(lambda x: re.sub('(?<=^|(?<=[^a-zA-Z0-9-_\.]))@([A-Za-z]+[A-Za-z0-9]+)|(\w+\.\.\.)|(RT)|(#\w+)|(\.\.\.)','',x))
 
+    print('lamda re, done')
     print('lambdas done. ET: %s' %(str(elapsed_time)))
     #add labels
     df = add_sentiment_lab(df)
@@ -392,8 +397,8 @@ weekly_mung()
 
 
 #run weekly mung every friday at noon
-schedule.every().day.at("12:00").do(weekly_mung)
+#schedule.every().day.at("12:00").do(weekly_mung)
 
-while True:
-    schedule.run_pending()
-    time.sleep(1)
+#while True:
+#    schedule.run_pending()
+#    time.sleep(1)
