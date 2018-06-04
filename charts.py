@@ -228,24 +228,14 @@ def make_frequency_data(lst,lab_replacements = None):
             frequency_df.sort_values('labels',inplace=True, ascending=True)
         frequency_df.replace(to_replace = lab_replacements,inplace=True)       
     return data_from_freq_df(frequency_df)
-
-#rotates layout 90d along x axis if taller than wide: takes layout, returns layout
-#def graph_along_min_dim(layout):
-#    boundaries = layout.boundaries()
-#    xdiff = boundaries[1][0] - boundaries[0][0]
-#    ydiff = boundaries[1][1] - boundaries[0][1]
-#    if ydiff > xdiff:
-#        layout.rotate(angle=90)
-#    return layout  
-
+    
 def weekly_mung():
     #for measuring script
     start_time = time.time()
     elapsed_time = time.time() - start_time
     
-    print('weekly mung')
-    print(elapsed_time)
-    print(len(lts))
+    logger.info('weekly mung')
+    logger.info("elapsed time: " + str(elapsed_time))
     chart_data = {}
    # df = pd.DataFrame(columns=lts.columns)
     ind = [row['created'] for row in lts]
@@ -331,10 +321,12 @@ def weekly_mung():
     troll_shares = troll_shares.nlargest(10)
     #adds 10 largest trolls
     chart_data['trolls'] = troll_shares.to_dict()
+    print('adds troll data')
+    print(chart_data['trolls'])
     
 
-    domain_combine_list=[["youtube.com","youtu.be","m.youtube.com"],["google.com","goo.gl"] ,["facebook.com","fb.me","m.facebook.com"],["linkedin.com","lnkd.in"],["sputniknews.com","sptnkne.ws"],["rt.com","on.rt.com"],["twitter.com","mobile.twitter.com"],["thesyriacampaign.org","act.thesyriacampaign.org"]]
-    remove_list = ["youtube.com","twitter.com","share.es","google.com","paper.li","tl.gd","wp.me","tmblr.co","ow.ly","linkedin.com","facebook.com"]
+    domain_combine_list=[["youtube.com","youtu.be","m.youtube.com"],["google.com","goo.gl","sites.google.com"] ,["facebook.com","fb.me","m.facebook.com"],["linkedin.com","lnkd.in"],["sputniknews.com","sptnkne.ws"],["rt.com","on.rt.com"],["twitter.com","mobile.twitter.com","pic.twitter.com"],["thesyriacampaign.org","act.thesyriacampaign.org"]]
+    remove_list = ["youtube.com","twitter.com","share.es","google.com","paper.li","tl.gd","wp.me","tmblr.co","ow.ly","linkedin.com","facebook.com","medium.com"]
     #make graph
     graph = make_media_graph(list(media_df), combine_list=domain_combine_list, remove_list=remove_list)
     #apply fr layout in 3d to get coordinates
@@ -385,20 +377,20 @@ def weekly_mung():
     chart_data['media_graph'] = make_graph_data(graph)
     
     chart_data['time'] = {'year':now.year,'month':now.month,'day':now.day, 'formatted':now.strftime('%m/%d/%Y %I%p')}
-    print('ready to put in amazon . ET: %s' %(str(elapsed_time)))
+    logger.info('ready to put in amazon . ET: %s' %(str(elapsed_time)))
     obj.put(Body=json.dumps(chart_data, cls=MyEncoder))
     obj_acl.put(ACL= 'public-read')
     print('put in amazon Done. ET: %s' %(str(elapsed_time)))
- #   with open("charts.json", "w") as outFile:
-  #      json.dump(chart_data,outFile,cls=MyEncoder)
+    # with open("charts.json", "w") as outFile:
+    #     json.dump(chart_data,outFile,cls=MyEncoder)
 
-weekly_mung()
+#weekly_mung()
 
 
 
 #run weekly mung every friday at noon
-#schedule.every().day.at("12:00").do(weekly_mung)
+schedule.every().day.at("15:30").do(weekly_mung)
 
-#while True:
-#    schedule.run_pending()
-#    time.sleep(1)
+while True:
+    schedule.run_pending()
+    time.sleep(1)
