@@ -62,11 +62,10 @@ var gradient = svg.append("defs")
 var graph = charts.media_graph;
 
 var simulation = d3.forceSimulation()
-
 	.force("collide",d3.forceCollide( function(d){return d.r + 100 }).iterations(16) )
 	.force("charge", d3.forceManyBody().theta(1.2))
 	.force("center", d3.forceCenter(chartWidth / 2, chartHeight / 2))
-	.force("link", d3.forceLink(graph.edges).distance(100))
+	.force("link", d3.forceLink(graph.edges).distance(180))
 
 
 
