@@ -17,6 +17,7 @@ console.log("barchart")
 
 
       selection.each(function (data) {
+          console.log(data)
 
         var svgContainer = d3.select(this).append('svg')
             .attr("viewBox", "0 0 " + width  + " " + height)
